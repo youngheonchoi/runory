@@ -48,6 +48,12 @@
   z-index: 1;
 }
 
+.home-description {
+  max-width: 56ch;
+  color: var(--text);
+  font-size: 18px;
+}
+
 .home-title {
   margin: 0;
   font-size: clamp(52px, 12vw, 140px);
@@ -62,6 +68,47 @@
 .hero-copy {
   max-width: 720px;
   margin-bottom: 28px;
+}
+
+.home-feature-grid,
+.site-footer {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  z-index: 1;
+}
+
+.home-feature-grid {
+  margin-top: 28px;
+}
+
+.site-footer {
+  width: min(1120px, 100%);
+  margin-top: 20px;
+}
+
+.site-footer-embedded {
+  width: 100%;
+}
+
+.info-card {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  padding: 22px;
+  display: grid;
+  gap: 10px;
+}
+
+.info-card h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-h);
+}
+
+.info-card p {
+  margin: 0;
+  color: var(--text);
 }
 
 .eyebrow {
@@ -841,6 +888,11 @@ input:focus {
     text-align: left;
   }
 
+  .home-feature-grid,
+  .site-footer {
+    grid-template-columns: 1fr;
+  }
+
   .recommendation-grid {
     grid-template-columns: 1fr;
   }
@@ -943,6 +995,10 @@ input:focus {
     gap: 14px;
   }
 
+  .home-description {
+    font-size: 14px;
+  }
+
   .home-title {
     font-size: clamp(38px, 16vw, 72px);
     letter-spacing: 0.08em;
@@ -968,7 +1024,8 @@ input:focus {
   .input-panel,
   .summary-card,
   .results,
-  .race-card {
+  .race-card,
+  .info-card {
     padding: 16px;
     border-radius: 18px;
   }
