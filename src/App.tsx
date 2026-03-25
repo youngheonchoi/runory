@@ -992,25 +992,27 @@ function App() {
         </section>
       ) : null}
 
-      <nav className="navigation" aria-label="네비게이션">
-        {navigationItems.map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            className={
-              activeSection === item.id ? 'navigation-item active' : 'navigation-item'
-            }
-            aria-current={activeSection === item.id ? 'page' : undefined}
-            aria-label={item.label}
-            onClick={() => setActiveSection(item.id)}
-          >
-            <span className="navigation-icon" aria-hidden="true">
-              {item.shortLabel}
-            </span>
-            <span className="navigation-label">{item.label}</span>
-          </button>
-        ))}
-      </nav>
+      <div className="navigation-shell">
+        <nav className="navigation" aria-label="네비게이션">
+          {navigationItems.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              className={
+                activeSection === item.id ? 'navigation-item active' : 'navigation-item'
+              }
+              aria-current={activeSection === item.id ? 'page' : undefined}
+              aria-label={item.label}
+              onClick={() => setActiveSection(item.id)}
+            >
+              <span className="navigation-icon" aria-hidden="true">
+                {item.shortLabel}
+              </span>
+              <span className="navigation-label">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
     </main>
   )
 }

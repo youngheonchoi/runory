@@ -670,21 +670,62 @@ input:focus {
   }
 }
 
-.navigation {
+.navigation-shell {
   position: fixed;
   left: 50%;
   bottom: 18px;
   transform: translateX(-50%);
-  width: min(720px, calc(100% - 24px));
+  width: min(680px, calc(100% - 24px));
+  z-index: 20;
+}
+
+.navigation-shell::before,
+.navigation-shell::after {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  place-items: center;
+  background: rgba(20, 21, 23, 0.18);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.navigation-shell::before {
+  content: '‹';
+  left: 8px;
+}
+
+.navigation-shell::after {
+  content: '›';
+  right: 8px;
+}
+
+.navigation {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(96px, 1fr);
   gap: 10px;
-  padding: 12px;
+  padding: 12px 34px 12px 12px;
   border: 1px solid var(--border-strong);
   border-radius: 28px;
   background: #92959a;
   box-shadow: var(--shadow);
-  z-index: 20;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.navigation::-webkit-scrollbar {
+  display: none;
 }
 
 .navigation-item {
@@ -692,6 +733,7 @@ input:focus {
   border-radius: 22px;
   background: var(--surface);
   color: var(--text);
+  min-width: 96px;
   padding: 12px 10px 11px;
   display: grid;
   justify-items: center;
@@ -825,15 +867,27 @@ input:focus {
 }
 
 @media (max-width: 640px) {
-  .navigation {
+  .navigation-shell {
     bottom: 12px;
     width: calc(100% - 16px);
+  }
+
+  .navigation {
     gap: 6px;
-    padding: 8px 6px;
+    padding: 8px 28px 8px 6px;
     border-radius: 24px;
+    grid-auto-columns: minmax(82px, 1fr);
+  }
+
+  .navigation-shell::before,
+  .navigation-shell::after {
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
   }
 
   .navigation-item {
+    min-width: 82px;
     padding: 9px 4px 8px;
   }
 
