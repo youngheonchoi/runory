@@ -3,7 +3,13 @@ import './App.css'
 
 type Gender = 'male' | 'female' | 'other'
 type RunningGoal = 'beginner' | 'daily' | 'long' | 'speed' | 'trail'
-type NavSection = 'home' | 'race' | 'calculator' | 'recommend' | 'training'
+type TopLevelSection = 'home' | 'race' | 'tools' | 'gear'
+type LeafPage =
+  | 'race-schedule'
+  | 'pace-calculator'
+  | 'training-plan'
+  | 'shoe-recommend'
+type AppPage = TopLevelSection | LeafPage
 type RaceCategory = '10k' | 'half' | 'full'
 type HiddenPage = 'site-info' | 'privacy-policy' | 'ad-policy' | 'contact' | null
 
@@ -48,17 +54,105 @@ type RaceItem = {
   note: string
 }
 
+type HubCard = {
+  id: LeafPage
+  title: string
+  description: string
+  badge: string
+}
+
 const navigationItems: Array<{
-  id: NavSection
+  id: TopLevelSection
   label: string
   shortLabel: string
 }> = [
-  { id: 'home', label: '홈', shortLabel: 'Home' },
+  { id: 'home', label: '메인', shortLabel: 'Main' },
   { id: 'race', label: '대회', shortLabel: 'Race' },
-  { id: 'calculator', label: '계산기', shortLabel: 'Calc' },
-  { id: 'recommend', label: '추천', shortLabel: 'Pick' },
-  { id: 'training', label: '훈련', shortLabel: 'Train' },
+  { id: 'tools', label: '도구', shortLabel: 'Tools' },
+  { id: 'gear', label: '장비', shortLabel: 'Gear' },
 ]
+
+const hubPages: Record<
+  Exclude<TopLevelSection, 'home'>,
+  {
+    eyebrow: string
+    title: string
+    lead: string
+    cards: HubCard[]
+  }
+> = {
+  race: {
+    eyebrow: 'race hub',
+    title: '대회 허브',
+    lead: '참가 가능한 러닝 대회 일정을 모아보고, 조건별로 빠르게 비교할 수 있습니다.',
+    cards: [
+      {
+        id: 'race-schedule',
+        title: '대회일정',
+        description: '대회명, 종목, 지역, 상태 기준으로 러닝 대회 일정을 탐색합니다.',
+        badge: 'Schedule',
+      },
+    ],
+  },
+  tools: {
+    eyebrow: 'running tools',
+    title: '러닝도구 허브',
+    lead: '페이스 확인부터 목표 대회 준비까지, 실전에 필요한 도구를 한 화면에서 고를 수 있습니다.',
+    cards: [
+      {
+        id: 'pace-calculator',
+        title: '페이스 계산기',
+        description: '거리와 기록을 넣으면 1km 기준 평균 페이스를 바로 계산합니다.',
+        badge: 'Calculator',
+      },
+      {
+        id: 'training-plan',
+        title: '훈련 계획표 추출',
+        description: '기록과 목표 대회 정보를 바탕으로 주차별 훈련 계획표를 생성합니다.',
+        badge: 'Planner',
+      },
+    ],
+  },
+  gear: {
+    eyebrow: 'gear hub',
+    title: '장비 허브',
+    lead: '러닝 장비 선택이 필요한 순간에 맞춰 핵심 추천 도구로 바로 이동할 수 있습니다.',
+    cards: [
+      {
+        id: 'shoe-recommend',
+        title: '러닝화 추천',
+        description: '성별, 발사이즈, 러닝 목적을 바탕으로 러닝화 후보를 정리합니다.',
+        badge: 'Shoes',
+      },
+    ],
+  },
+}
+
+const leafPageMeta: Record<
+  LeafPage,
+  { parent: Exclude<TopLevelSection, 'home'>; parentLabel: string; label: string }
+> = {
+  'race-schedule': {
+    parent: 'race',
+    parentLabel: '대회',
+    label: '대회일정',
+  },
+  'pace-calculator': {
+    parent: 'tools',
+    parentLabel: '러닝도구',
+    label: '페이스 계산기',
+  },
+  'training-plan': {
+    parent: 'tools',
+    parentLabel: '러닝도구',
+    label: '훈련 계획표 추출',
+  },
+  'shoe-recommend': {
+    parent: 'gear',
+    parentLabel: '장비',
+    label: '러닝화 추천',
+  },
+}
 
 const raceCities = [
   '서울',
@@ -262,7 +356,7 @@ function getHiddenPageFromUrl(): HiddenPage {
 }
 
 function App() {
-  const [activeSection, setActiveSection] = useState<NavSection>('home')
+  const [activePage, setActivePage] = useState<AppPage>('home')
   const [hiddenPage, setHiddenPage] = useState<HiddenPage>(() => getHiddenPageFromUrl())
   const [raceNameQuery, setRaceNameQuery] = useState('')
   const [raceCategoryFilter, setRaceCategoryFilter] = useState('')
@@ -480,13 +574,25 @@ function App() {
     }
   }, [])
 
-  const handleNavigationSelect = (section: NavSection) => {
-    setActiveSection(section)
+  const activeTopLevel = useMemo<TopLevelSection>(() => {
+    if (activePage in leafPageMeta) {
+      return leafPageMeta[activePage as LeafPage].parent
+    }
+
+    return activePage as TopLevelSection
+  }, [activePage])
+
+  const handleNavigationSelect = (section: TopLevelSection) => {
+    setActivePage(section)
 
     if (hiddenPage && typeof window !== 'undefined') {
       window.history.replaceState(null, '', '/')
       setHiddenPage(null)
     }
+  }
+
+  const handleLeafNavigation = (page: LeafPage) => {
+    setActivePage(page)
   }
 
   return (
@@ -510,7 +616,7 @@ function App() {
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'home' ? (
+      {!hiddenPage && activePage === 'home' ? (
         <section className="hero-card home-card">
           <div className="home-mark">
             <span className="eyebrow">Running Info</span>
@@ -520,8 +626,48 @@ function App() {
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'recommend' ? (
+      {!hiddenPage && activePage !== 'home' && activePage in hubPages ? (
         <section className="hero-card">
+          <div className="hero-copy">
+            <span className="eyebrow">{hubPages[activePage as Exclude<TopLevelSection, 'home'>].eyebrow}</span>
+            <h1>{hubPages[activePage as Exclude<TopLevelSection, 'home'>].title}</h1>
+            <p className="lead">{hubPages[activePage as Exclude<TopLevelSection, 'home'>].lead}</p>
+          </div>
+
+          <section className="hub-grid" aria-label={`${navigationItems.find((item) => item.id === activePage)?.label} 하위 메뉴`}>
+            {hubPages[activePage as Exclude<TopLevelSection, 'home'>].cards.map((card) => (
+              <article className="hub-card" key={card.id}>
+                <span className="shoe-category">{card.badge}</span>
+                <h2>{card.title}</h2>
+                <p>{card.description}</p>
+                <button
+                  className="hub-card-button"
+                  type="button"
+                  onClick={() => handleLeafNavigation(card.id)}
+                >
+                  이동하기
+                </button>
+              </article>
+            ))}
+          </section>
+        </section>
+      ) : null}
+
+      {!hiddenPage && activePage === 'shoe-recommend' ? (
+        <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['shoe-recommend'].parent)}
+            >
+              {leafPageMeta['shoe-recommend'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['shoe-recommend'].parentLabel} / {leafPageMeta['shoe-recommend'].label}
+            </span>
+          </div>
+
           <div className="hero-copy">
             <span className="eyebrow">pick</span>
             <h1>러닝화 추천을 위한 정보를 입력하세요</h1>
@@ -663,8 +809,21 @@ function App() {
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'calculator' ? (
+      {!hiddenPage && activePage === 'pace-calculator' ? (
         <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['pace-calculator'].parent)}
+            >
+              {leafPageMeta['pace-calculator'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['pace-calculator'].parentLabel} / {leafPageMeta['pace-calculator'].label}
+            </span>
+          </div>
+
           <div className="hero-copy">
             <span className="eyebrow">calc</span>
             <h1>페이스 계산기</h1>
@@ -766,8 +925,21 @@ function App() {
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'race' ? (
+      {!hiddenPage && activePage === 'race-schedule' ? (
         <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['race-schedule'].parent)}
+            >
+              {leafPageMeta['race-schedule'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['race-schedule'].parentLabel} / {leafPageMeta['race-schedule'].label}
+            </span>
+          </div>
+
           <div className="hero-copy">
             <span className="eyebrow">race</span>
             <h1>대회 찾기</h1>
@@ -892,8 +1064,21 @@ function App() {
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'training' ? (
+      {!hiddenPage && activePage === 'training-plan' ? (
         <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['training-plan'].parent)}
+            >
+              {leafPageMeta['training-plan'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['training-plan'].parentLabel} / {leafPageMeta['training-plan'].label}
+            </span>
+          </div>
+
           <div className="hero-copy">
             <span className="eyebrow">train</span>
             <h1>훈련 계획표 추출</h1>
@@ -1174,15 +1359,14 @@ function App() {
         </section>
       ) : null}
 
-      {activeSection !== 'home' &&
-      activeSection !== 'recommend' &&
-      activeSection !== 'calculator' &&
-      activeSection !== 'race' &&
-      activeSection !== 'training' ? (
+      {!hiddenPage &&
+      activePage !== 'home' &&
+      !(activePage in hubPages) &&
+      !(activePage in leafPageMeta) ? (
         <section className="hero-card placeholder-card">
           <div className="placeholder-copy">
             <span className="eyebrow">RUNORY</span>
-            <h1>{navigationItems.find((item) => item.id === activeSection)?.label}</h1>
+            <h1>{navigationItems.find((item) => item.id === activePage)?.label}</h1>
             <p>이 화면은 다음 단계에서 연결할 예정입니다.</p>
           </div>
         </section>
@@ -1195,9 +1379,9 @@ function App() {
               key={item.label}
               type="button"
               className={
-                activeSection === item.id ? 'navigation-item active' : 'navigation-item'
+                activeTopLevel === item.id ? 'navigation-item active' : 'navigation-item'
               }
-              aria-current={activeSection === item.id ? 'page' : undefined}
+              aria-current={activeTopLevel === item.id ? 'page' : undefined}
               aria-label={item.label}
               onClick={() => handleNavigationSelect(item.id)}
             >

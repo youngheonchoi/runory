@@ -171,11 +171,11 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
   const environment = env.CF_PAGES_BRANCH && env.CF_PAGES_BRANCH !== 'main'
     ? 'preview'
-    : 'production'
+    : ''
   const model =
     environment === 'preview'
-      ? env.OPENAI_MODEL_PREVIEW ?? env.OPENAI_MODEL ?? 'gpt-5.4-mini'
-      : env.OPENAI_MODEL ?? 'gpt-5.4-mini'
+      ? env.OPENAI_MODEL_PREVIEW ?? env.OPENAI_MODEL ?? ''
+      : env.OPENAI_MODEL ?? ''
 
   const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
