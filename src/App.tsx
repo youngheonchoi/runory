@@ -8,6 +8,7 @@ type LeafPage =
   | 'race-schedule'
   | 'pace-calculator'
   | 'training-plan'
+  | 'weather'
   | 'shoe-recommend'
 type AppPage = TopLevelSection | LeafPage
 type RaceCategory = '10k' | 'half' | 'full'
@@ -52,6 +53,41 @@ type RaceItem = {
   category: string
   status: string
   note: string
+}
+
+type WeatherForecastItem = {
+  timestamp: number
+  timeLabel: string
+  temperature: number
+  feelsLike: number
+  humidity: number
+  windSpeed: number
+  pop: number
+  description: string
+  icon: string
+}
+
+type WeatherDaySummary = {
+  date: string
+  label: string
+  minTemp: number
+  maxTemp: number
+  avgPop: number
+  topDescription: string
+}
+
+type WeatherResponse = {
+  city: {
+    name: string
+    country: string
+  }
+  summary: {
+    nextSlot: WeatherForecastItem
+    bestWindow: WeatherForecastItem
+    caution: string
+  }
+  days: WeatherDaySummary[]
+  forecast: WeatherForecastItem[]
 }
 
 type HubCard = {
@@ -111,6 +147,12 @@ const hubPages: Record<
         description: '기록과 목표 대회 정보를 바탕으로 주차별 훈련 계획표를 생성합니다.',
         badge: 'Planner',
       },
+      {
+        id: 'weather',
+        title: '날씨',
+        description: '러닝 전 확인이 필요한 날씨 정보를 연결할 수 있는 메뉴입니다.',
+        badge: 'Weather',
+      },
     ],
   },
   gear: {
@@ -146,6 +188,11 @@ const leafPageMeta: Record<
     parent: 'tools',
     parentLabel: '러닝도구',
     label: '훈련 계획표 추출',
+  },
+  weather: {
+    parent: 'tools',
+    parentLabel: '러닝도구',
+    label: '날씨',
   },
   'shoe-recommend': {
     parent: 'gear',
@@ -184,6 +231,13 @@ const raceNotes = [
   '야간 운영 구간이 포함되어 분위기가 선명함',
   '가족 참가 부문과 메인 레이스가 함께 운영됨',
 ]
+
+const seoulWeatherCity = {
+  id: 'seoul',
+  name: '서울',
+  lat: 37.5665,
+  lon: 126.978,
+}
 
 const raceItems: RaceItem[] = Array.from({ length: 50 }, (_, index) => {
   const city = raceCities[index % raceCities.length]
@@ -383,6 +437,10 @@ function App() {
   const [averageTrainingPace, setAverageTrainingPace] = useState('')
   const [result, setResult] = useState<RecommendationResponse | null>(null)
   const [trainingResult, setTrainingResult] = useState<TrainingPlanResponse | null>(null)
+  const [weatherResult, setWeatherResult] = useState<WeatherResponse | null>(null)
+  const [weatherLoading, setWeatherLoading] = useState(false)
+  const [weatherError, setWeatherError] = useState('')
+  const [weatherAutoRequested, setWeatherAutoRequested] = useState(false)
   const [loading, setLoading] = useState(false)
   const [trainingLoading, setTrainingLoading] = useState(false)
   const [error, setError] = useState('')
@@ -560,6 +618,68 @@ function App() {
   }
 
   useEffect(() => {
+    if (activePage !== 'weather') {
+      setWeatherAutoRequested(false)
+    }
+  }, [activePage])
+
+  useEffect(() => {
+    if (
+      activePage !== 'weather' ||
+      weatherResult ||
+      weatherLoading ||
+      weatherAutoRequested
+    ) {
+      return
+    }
+
+    setWeatherAutoRequested(true)
+
+    void (async () => {
+      setWeatherLoading(true)
+      setWeatherError('')
+
+      try {
+        const response = await fetch('/api/weather', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            cityName: seoulWeatherCity.name,
+            lat: seoulWeatherCity.lat,
+            lon: seoulWeatherCity.lon,
+          }),
+        })
+
+        const payload = (await response.json()) as
+          | WeatherResponse
+          | { error?: string; details?: string }
+
+        if (!response.ok) {
+          throw new Error(
+            'error' in payload && payload.error
+              ? [payload.error, payload.details].filter(Boolean).join('\n\n')
+              : '날씨 정보를 받아오지 못했습니다.',
+          )
+        }
+
+        if ('forecast' in payload) {
+          setWeatherResult(payload)
+        }
+      } catch (caught) {
+        const message =
+          caught instanceof Error
+            ? caught.message
+            : '날씨 요청 중 알 수 없는 오류가 발생했습니다.'
+        setWeatherError(message)
+      } finally {
+        setWeatherLoading(false)
+      }
+    })()
+  }, [activePage, weatherAutoRequested, weatherLoading, weatherResult])
+
+  useEffect(() => {
     const syncHiddenPage = () => {
       setHiddenPage(getHiddenPageFromUrl())
     }
@@ -637,7 +757,7 @@ function App() {
           <section className="hub-grid" aria-label={`${navigationItems.find((item) => item.id === activePage)?.label} 하위 메뉴`}>
             {hubPages[activePage as Exclude<TopLevelSection, 'home'>].cards.map((card) => (
               <article className="hub-card" key={card.id}>
-                <span className="shoe-category">{card.badge}</span>
+                <span className="shoe-category status ready">{card.badge}</span>
                 <h2>{card.title}</h2>
                 <p>{card.description}</p>
                 <button
@@ -1353,6 +1473,110 @@ function App() {
             ) : (
               <p className="results-empty">
                 훈련 조건을 입력하면 여기에 훈련 계획표 결과가 표시됩니다.
+              </p>
+            )}
+          </section>
+        </section>
+      ) : null}
+
+      {!hiddenPage && activePage === 'weather' ? (
+        <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta.weather.parent)}
+            >
+              {leafPageMeta.weather.parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta.weather.parentLabel} / {leafPageMeta.weather.label}
+            </span>
+          </div>
+
+          <div className="hero-copy">
+            <span className="eyebrow">weather</span>
+            <h1>러닝 날씨</h1>
+            <p className="lead">
+              서울 기준 OpenWeather 5일 / 3시간 예보를 바탕으로 러닝 전 확인이 필요한 기온, 강수확률, 바람 정보를 확인합니다.
+            </p>
+          </div>
+
+          <div className="weather-layout">
+            <aside className="summary-card weather-summary" aria-label="러닝 날씨 요약">
+              <div className="summary-header">
+                <span>오늘 날씨 정보</span>
+                <span className={weatherResult ? 'status ready' : 'status'}>
+                  {weatherResult ? weatherResult.city.name : '대기'}
+                </span>
+              </div>
+
+              {weatherResult ? (
+                <>
+                  <div className="weather-primary-card">
+                    <span className="pace-caption">가장 가까운 예보</span>
+                    <strong>
+                      {weatherResult.summary.nextSlot.temperature.toFixed(1)}°C
+                    </strong>
+                    <p>
+                      {weatherResult.summary.nextSlot.timeLabel} ·{' '}
+                      {weatherResult.summary.nextSlot.description}
+                    </p>
+                  </div>
+
+                  <dl className="summary-list">
+                    <div>
+                      <dt>체감온도</dt>
+                      <dd>{weatherResult.summary.nextSlot.feelsLike.toFixed(1)}°C</dd>
+                    </div>
+                    <div>
+                      <dt>강수확률</dt>
+                      <dd>{Math.round(weatherResult.summary.nextSlot.pop * 100)}%</dd>
+                    </div>
+                  </dl>
+
+                  <p className="summary-note">{weatherResult.summary.caution}</p>
+                </>
+              ) : (
+                <p className="results-empty">
+                  서울 기준 날씨 요약을 불러오면 여기에 표시됩니다.
+                </p>
+              )}
+            </aside>
+          </div>
+
+          <section className="results" aria-label="5일 예보 결과">
+            <div className="results-head">
+              <div>
+                <h2>{weatherLoading ? '날씨 불러오는 중' : '5일 예보'}</h2>
+              </div>
+            </div>
+
+            {weatherLoading ? (
+              <p className="results-tip">OpenWeather 예보 데이터를 정리하는 중입니다.</p>
+            ) : weatherError ? (
+              <div className="error-box" role="alert">
+                <strong>날씨 조회 실패</strong>
+                <p>{weatherError}</p>
+              </div>
+            ) : weatherResult ? (
+              <>
+                <div className="weather-day-grid">
+                  {weatherResult.days.map((day) => (
+                    <article className="weather-primary-card" key={day.date}>
+                      <span className="shoe-category">{day.label}</span>
+                      <h3>{day.topDescription}</h3>
+                      <p>
+                        {day.minTemp.toFixed(1)}°C ~ {day.maxTemp.toFixed(1)}°C
+                      </p>
+                      <p>평균 강수확률 {Math.round(day.avgPop * 100)}%</p>
+                    </article>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="results-empty">
+                서울 기준 예보를 불러오면 여기에 5일 / 3시간 날씨 정보가 표시됩니다.
               </p>
             )}
           </section>
