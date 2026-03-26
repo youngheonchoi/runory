@@ -1,10 +1,11 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import './App.css'
 
 type Gender = 'male' | 'female' | 'other'
 type RunningGoal = 'beginner' | 'daily' | 'long' | 'speed' | 'trail'
 type NavSection = 'home' | 'race' | 'calculator' | 'recommend' | 'training'
 type RaceCategory = '10k' | 'half' | 'full'
+type HiddenPage = 'site-info' | 'privacy-policy' | 'ad-policy' | 'contact' | null
 
 type RecommendationItem = {
   name: string
@@ -109,8 +110,160 @@ const raceItems: RaceItem[] = Array.from({ length: 50 }, (_, index) => {
   }
 })
 
+const siteInfoSections = [
+  {
+    title: '서비스 소개',
+    body:
+      'RUNORY는 러너가 장비, 대회, 훈련 정보를 한 화면에서 정리할 수 있도록 설계한 러닝 정보 웹 서비스입니다. 추천 결과와 계획표는 참고용 정보이며 개인의 건강 상태와 훈련 이력에 따라 달라질 수 있습니다.',
+  },
+  {
+    title: '광고 및 운영 원칙',
+    body:
+      '사이트는 러닝 관련 정보 탐색과 비교를 돕는 목적의 콘텐츠를 제공합니다. 광고가 게재되더라도 특정 상품이나 대회를 보장하거나 강제 추천하지 않으며, 실제 구매와 참가 전에는 반드시 공식 판매처와 주최 측 정보를 다시 확인해야 합니다.',
+  },
+  {
+    title: '문의 및 정책',
+    body:
+      '오류 제보, 정보 수정 요청, 광고 관련 문의는 운영자 검토 후 반영합니다. 개인정보를 직접 수집하는 회원가입 기능은 없으며, 서비스 품질 향상을 위한 기본적인 웹 접근만 고려합니다.',
+  },
+]
+
+const privacyPolicySections = [
+  {
+    title: '기본 원칙',
+    body:
+      'RUNORY는 회원가입 기능을 제공하지 않으며 이름, 전화번호, 주소와 같은 직접 식별 개인정보를 기본적으로 수집하지 않습니다. 서비스 이용 과정에서 브라우저가 자동 전송하는 최소한의 기술 정보는 호스팅, 보안, 성능 유지 목적에 한해 처리될 수 있습니다.',
+  },
+  {
+    title: '쿠키 및 광고 관련 안내',
+    body:
+      'Google을 포함한 제3자 제공업체는 쿠키를 사용하여 사용자의 이전 방문 기록을 기반으로 광고를 제공할 수 있습니다. Google의 광고 쿠키를 통해 Google과 파트너는 이 사이트 및 인터넷상의 다른 사이트 방문 기록을 기반으로 광고를 게재할 수 있습니다.',
+  },
+  {
+    title: '사용자 선택권',
+    body:
+      '사용자는 Google 광고 설정에서 개인 맞춤 광고를 관리할 수 있으며, 추가로 aboutads.info를 통해 일부 제3자 맞춤 광고를 거부할 수 있습니다. 사이트는 광고 정책과 개인정보 관련 안내가 변경될 경우 해당 페이지를 업데이트합니다.',
+  },
+]
+
+const adPolicySections = [
+  {
+    title: '광고 운영 기준',
+    body:
+      '광고는 서비스 운영을 위한 수익 수단으로 사용되며, 특정 상품이나 대회를 보장하거나 순위를 대가로 조정하지 않습니다. 콘텐츠와 광고는 구분되어 제공됩니다.',
+  },
+  {
+    title: '콘텐츠 품질 원칙',
+    body:
+      'RUNORY는 러닝화 추천, 대회 탐색, 훈련 계획, 러닝 계산기 등 실제 러닝 정보 탐색에 도움이 되는 기능성 콘텐츠를 제공합니다. 비어 있는 페이지나 단순 템플릿만으로 구성된 화면은 지양합니다.',
+  },
+  {
+    title: '면책 안내',
+    body:
+      '추천 결과와 계획표는 참고용이며 건강 상태, 부상 이력, 대회 공식 규정, 재고 및 가격 변동에 따라 실제 판단이 달라질 수 있습니다. 구매와 참가 전에는 반드시 공식 정보 재확인이 필요합니다.',
+  },
+]
+
+const contactSections = [
+  {
+    title: '문의 안내',
+    body:
+      '서비스 오류, 정보 수정 요청, 광고 관련 문의는 운영자 검토 후 순차적으로 반영합니다. 현재는 별도 회원 지원 시스템 없이 안내 페이지를 통해 운영 정책을 공개합니다.',
+  },
+  {
+    title: '응답 범위',
+    body:
+      '러닝화 정보, 대회 정보, 훈련 계획 관련 오탈자나 잘못된 노출이 확인되면 우선적으로 수정합니다. 의료적 판단이나 개인별 부상 진단은 제공하지 않습니다.',
+  },
+  {
+    title: '운영 메모',
+    body:
+      '광고 심사, 정책 반영, 콘텐츠 보강에 따라 페이지 구성이 조정될 수 있습니다. 서비스 신뢰도와 사용자 경험을 해치지 않는 방향을 우선 원칙으로 둡니다.',
+  },
+]
+
+const hiddenPageContent: Record<
+  Exclude<HiddenPage, null>,
+  {
+    eyebrow: string
+    title: string
+    lead: string
+    sections: typeof siteInfoSections
+  }
+> = {
+  'site-info': {
+    eyebrow: 'site info',
+    title: 'RUNORY 사이트 안내',
+    lead:
+      '서비스 목적, 운영 원칙, 광고 및 정책 관련 기본 정보를 정리한 안내 페이지입니다.',
+    sections: siteInfoSections,
+  },
+  'privacy-policy': {
+    eyebrow: 'privacy',
+    title: '개인정보 및 쿠키 안내',
+    lead:
+      '광고 게재와 서비스 운영에 필요한 기본적인 개인정보 및 쿠키 처리 방침을 안내합니다.',
+    sections: privacyPolicySections,
+  },
+  'ad-policy': {
+    eyebrow: 'ad policy',
+    title: '광고 및 콘텐츠 운영 원칙',
+    lead:
+      '광고와 콘텐츠를 어떤 기준으로 운영하는지, 사용자에게 어떤 정보를 제공하는지 설명합니다.',
+    sections: adPolicySections,
+  },
+  contact: {
+    eyebrow: 'contact',
+    title: '문의 및 운영 안내',
+    lead:
+      '오류 제보, 운영 기준, 수정 요청 범위 등 서비스 문의와 관련된 기본 정보를 정리합니다.',
+    sections: contactSections,
+  },
+}
+
+function getHiddenPageFromUrl(): HiddenPage {
+  if (typeof window === 'undefined') return null
+
+  const { hash, pathname } = window.location
+
+  if (hash === '#/site-info' || hash === '#site-info') {
+    return 'site-info'
+  }
+
+  if (hash === '#/privacy-policy' || hash === '#privacy-policy') {
+    return 'privacy-policy'
+  }
+
+  if (hash === '#/ad-policy' || hash === '#ad-policy') {
+    return 'ad-policy'
+  }
+
+  if (hash === '#/contact' || hash === '#contact') {
+    return 'contact'
+  }
+
+  if (pathname === '/site-info') {
+    return 'site-info'
+  }
+
+  if (pathname === '/privacy-policy') {
+    return 'privacy-policy'
+  }
+
+  if (pathname === '/ad-policy') {
+    return 'ad-policy'
+  }
+
+  if (pathname === '/contact') {
+    return 'contact'
+  }
+
+  return null
+}
+
 function App() {
   const [activeSection, setActiveSection] = useState<NavSection>('home')
+  const [hiddenPage, setHiddenPage] = useState<HiddenPage>(() => getHiddenPageFromUrl())
   const [raceNameQuery, setRaceNameQuery] = useState('')
   const [raceCategoryFilter, setRaceCategoryFilter] = useState('')
   const [raceLocationFilter, setRaceLocationFilter] = useState('')
@@ -312,24 +465,68 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    const syncHiddenPage = () => {
+      setHiddenPage(getHiddenPageFromUrl())
+    }
+
+    syncHiddenPage()
+    window.addEventListener('hashchange', syncHiddenPage)
+    window.addEventListener('popstate', syncHiddenPage)
+
+    return () => {
+      window.removeEventListener('hashchange', syncHiddenPage)
+      window.removeEventListener('popstate', syncHiddenPage)
+    }
+  }, [])
+
+  const handleNavigationSelect = (section: NavSection) => {
+    setActiveSection(section)
+
+    if (hiddenPage && typeof window !== 'undefined') {
+      window.history.replaceState(null, '', '/')
+      setHiddenPage(null)
+    }
+  }
+
   return (
     <main className="page">
-      {activeSection === 'home' ? (
+      {hiddenPage ? (
+        <section className="hero-card">
+          <div className="hero-copy">
+            <span className="eyebrow">{hiddenPageContent[hiddenPage].eyebrow}</span>
+            <h1>{hiddenPageContent[hiddenPage].title}</h1>
+            <p className="lead">{hiddenPageContent[hiddenPage].lead}</p>
+          </div>
+
+          <section className="site-footer site-footer-embedded" aria-label="사이트 운영 정보">
+            {hiddenPageContent[hiddenPage].sections.map((section) => (
+              <article className="info-card" key={section.title}>
+                <h2>{section.title}</h2>
+                <p>{section.body}</p>
+              </article>
+            ))}
+          </section>
+        </section>
+      ) : null}
+
+      {!hiddenPage && activeSection === 'home' ? (
         <section className="hero-card home-card">
           <div className="home-mark">
             <span className="eyebrow">Running Info</span>
             <h1 className="home-title">RUNORY</h1>
+            <p className="home-description">러닝에 필요한 정보와 도구를 한 곳에서 정리합니다.</p>
           </div>
         </section>
       ) : null}
 
-      {activeSection === 'recommend' ? (
+      {!hiddenPage && activeSection === 'recommend' ? (
         <section className="hero-card">
           <div className="hero-copy">
             <span className="eyebrow">pick</span>
             <h1>러닝화 추천을 위한 정보를 입력하세요</h1>
             <p className="lead">
-
+              성별, 발사이즈, 러닝 목적을 기반으로 러닝화 후보를 정리합니다. 실제 착용감은 발볼, 안정성 선호, 예산에 따라 달라질 수 있습니다.
             </p>
           </div>
 
@@ -466,7 +663,7 @@ function App() {
         </section>
       ) : null}
 
-      {activeSection === 'calculator' ? (
+      {!hiddenPage && activeSection === 'calculator' ? (
         <section className="hero-card">
           <div className="hero-copy">
             <span className="eyebrow">calc</span>
@@ -569,13 +766,13 @@ function App() {
         </section>
       ) : null}
 
-      {activeSection === 'race' ? (
+      {!hiddenPage && activeSection === 'race' ? (
         <section className="hero-card">
           <div className="hero-copy">
             <span className="eyebrow">race</span>
             <h1>대회 찾기</h1>
             <p className="lead">
-
+              대회명, 종목, 지역, 상태를 기준으로 러닝 대회를 탐색하고 일정과 기본 정보를 비교할 수 있습니다.
             </p>
           </div>
 
@@ -583,8 +780,7 @@ function App() {
             <div className="summary-header">
               <span>검색</span>
               <div className="race-search-actions">
-                {/* <span className="status">{filteredRaces.length}개 결과</span> */}
-                <span className="status">0개 결과</span>
+                <span className="status">{filteredRaces.length}개 결과</span>
                 <button
                   className="secondary-button"
                   type="button"
@@ -650,7 +846,7 @@ function App() {
           </section>
 
           <section className="race-list-section" aria-label="대회 리스트">
-            {filteredRaces.length < 0 ? (
+            {filteredRaces.length > 0 ? (
               <div className="race-list">
                 {filteredRaces.map((race) => (
                   <article className="race-card" key={`${race.name}-${race.date}`}>
@@ -689,20 +885,20 @@ function App() {
               </div>
             ) : (
               <p className="results-empty">
-                준비중...
+                진행중인 대회가 없습니다.
               </p>
             )}
           </section>
         </section>
       ) : null}
 
-      {activeSection === 'training' ? (
+      {!hiddenPage && activeSection === 'training' ? (
         <section className="hero-card">
           <div className="hero-copy">
             <span className="eyebrow">train</span>
             <h1>훈련 계획표 추출</h1>
             <p className="lead">
-
+              현재 기록, 목표 대회, 주간 훈련 상태를 입력하면 OpenAI 기반으로 주차별 훈련 계획표를 생성합니다.
             </p>
           </div>
 
@@ -1003,7 +1199,7 @@ function App() {
               }
               aria-current={activeSection === item.id ? 'page' : undefined}
               aria-label={item.label}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => handleNavigationSelect(item.id)}
             >
               <span className="navigation-icon" aria-hidden="true">
                 {item.shortLabel}
