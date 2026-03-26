@@ -890,7 +890,7 @@ function App() {
           <section className="hub-grid" aria-label={`${navigationItems.find((item) => item.id === activePage)?.label} 하위 메뉴`}>
             {hubPages[activePage as Exclude<TopLevelSection, 'home'>].cards.map((card) => (
               <article className="hub-card" key={card.id}>
-                <span className="shoe-category status ready">{card.badge}</span>
+                <span className="shoe-category">{card.badge}</span>
                 <h2>{card.title}</h2>
                 <p>{card.description}</p>
                 <button
