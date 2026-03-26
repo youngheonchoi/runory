@@ -3,13 +3,17 @@ import './App.css'
 
 type Gender = 'male' | 'female' | 'other'
 type RunningGoal = 'beginner' | 'daily' | 'long' | 'speed' | 'trail'
-type TopLevelSection = 'home' | 'race' | 'tools' | 'gear'
+type TopLevelSection = 'home' | 'race' | 'tools' | 'gear' | 'injury'
 type LeafPage =
   | 'race-schedule'
   | 'pace-calculator'
   | 'training-plan'
   | 'weather'
   | 'shoe-recommend'
+  | 'injury-types'
+  | 'injury-prevention'
+  | 'injury-recovery'
+  | 'injury-ai-diagnosis'
 type AppPage = TopLevelSection | LeafPage
 type RaceCategory = '10k' | 'half' | 'full'
 type HiddenPage = 'site-info' | 'privacy-policy' | 'ad-policy' | 'contact' | null
@@ -106,6 +110,7 @@ const navigationItems: Array<{
   { id: 'race', label: '대회', shortLabel: 'Race' },
   { id: 'tools', label: '도구', shortLabel: 'Tools' },
   { id: 'gear', label: '장비', shortLabel: 'Gear' },
+  { id: 'injury', label: '부상', shortLabel: 'Care' },
 ]
 
 const hubPages: Record<
@@ -168,6 +173,37 @@ const hubPages: Record<
       },
     ],
   },
+  injury: {
+    eyebrow: 'injury hub',
+    title: '부상 허브',
+    lead: '러닝 중 자주 접하는 부상 정보와 예방, 회복 팁을 빠르게 확인할 수 있습니다.',
+    cards: [
+      {
+        id: 'injury-types',
+        title: '부상종류',
+        description: '러너에게 흔한 부상 유형과 특징을 간단히 정리합니다.',
+        badge: 'Types',
+      },
+      {
+        id: 'injury-prevention',
+        title: '부상예방',
+        description: '훈련 전후 습관과 장비 선택 관점에서 예방 포인트를 안내합니다.',
+        badge: 'Prevent',
+      },
+      {
+        id: 'injury-recovery',
+        title: '회복',
+        description: '통증 발생 후 회복 단계에서 점검할 기본 원칙을 정리합니다.',
+        badge: 'Recover',
+      },
+      {
+        id: 'injury-ai-diagnosis',
+        title: 'AI진단',
+        description: '러닝 중 통증 상황을 바탕으로 진단 보조 기능을 준비 중입니다.',
+        badge: 'AI',
+      },
+    ],
+  },
 }
 
 const leafPageMeta: Record<
@@ -198,6 +234,103 @@ const leafPageMeta: Record<
     parent: 'gear',
     parentLabel: '장비',
     label: '러닝화 추천',
+  },
+  'injury-types': {
+    parent: 'injury',
+    parentLabel: '부상',
+    label: '부상종류',
+  },
+  'injury-prevention': {
+    parent: 'injury',
+    parentLabel: '부상',
+    label: '부상예방',
+  },
+  'injury-recovery': {
+    parent: 'injury',
+    parentLabel: '부상',
+    label: '회복',
+  },
+  'injury-ai-diagnosis': {
+    parent: 'injury',
+    parentLabel: '부상',
+    label: 'AI진단',
+  },
+}
+
+const injuryPageContent: Record<
+  Extract<LeafPage, 'injury-types' | 'injury-prevention' | 'injury-recovery'>,
+  {
+    eyebrow: string
+    title: string
+    lead: string
+    sections: Array<{ title: string; body: string }>
+  }
+> = {
+  'injury-types': {
+    eyebrow: 'injury types',
+    title: '러닝 부상 종류',
+    lead: '아래 내용은 임시 안내이며, 통증이 심하거나 오래가면 진료가 우선입니다.',
+    sections: [
+      {
+        title: '무릎 통증',
+        body:
+          '러너스 니로 불리는 슬개대퇴 통증 증후군은 러닝 후 무릎 앞쪽이 뻐근하거나 계단에서 불편한 형태로 자주 나타납니다. 갑작스러운 거리 증가나 하체 근력 불균형이 원인이 될 수 있습니다.',
+      },
+      {
+        title: '정강이 통증',
+        body:
+          '정강이 안쪽이 욱신거리는 신 스플린트는 초보 러너나 훈련량을 급하게 올린 경우 흔합니다. 딱딱한 노면, 부족한 회복, 닳은 신발이 겹치면 더 잘 생깁니다.',
+      },
+      {
+        title: '아킬레스와 발바닥 통증',
+        body:
+          '아킬레스건 통증과 족저근막 자극은 종아리 뻣뻣함, 발뒤꿈치 통증과 함께 나타날 수 있습니다. 스피드 훈련이나 언덕 훈련이 많을 때 부담이 커지기 쉽습니다.',
+      },
+    ],
+  },
+  'injury-prevention': {
+    eyebrow: 'injury prevention',
+    title: '러닝 부상 예방',
+    lead: '무리하지 않는 훈련 설계와 기본 습관만 정리해도 부상 확률을 꽤 낮출 수 있습니다.',
+    sections: [
+      {
+        title: '훈련량은 천천히 올리기',
+        body:
+          '주간 거리와 강도를 한 번에 크게 올리지 말고 점진적으로 조정하는 편이 안전합니다. 특히 인터벌, 언덕, 장거리 훈련을 같은 주에 몰아넣으면 피로 누적이 빠릅니다.',
+      },
+      {
+        title: '워밍업과 근력 보강',
+        body:
+          '러닝 전 가벼운 조깅과 관절 가동성 운동으로 몸을 풀고, 평소에는 둔근과 종아리, 햄스트링 보강을 해두는 것이 좋습니다. 자세가 무너질수록 특정 부위에 스트레스가 집중됩니다.',
+      },
+      {
+        title: '신발과 회복 관리',
+        body:
+          '발에 맞지 않거나 마모된 신발은 반복 충격을 키울 수 있습니다. 수면, 수분, 휴식일 확보도 예방의 일부라서 훈련만큼 중요하게 봐야 합니다.',
+      },
+    ],
+  },
+  'injury-recovery': {
+    eyebrow: 'recovery',
+    title: '러닝 후 회복 가이드',
+    lead: '통증이 생긴 뒤에는 참으면서 뛰는 것보다 강도를 낮추고 상태를 구분하는 판단이 먼저입니다.',
+    sections: [
+      {
+        title: '통증이 있으면 강도 즉시 낮추기',
+        body:
+          '러닝 중 통증이 점점 선명해지면 그날 훈련은 줄이거나 중단하는 편이 낫습니다. 초기에 무리하면 가벼운 자극이 장기적인 부상으로 번질 수 있습니다.',
+      },
+      {
+        title: '냉온 관리와 대체 운동',
+        body:
+          '염증감이 강한 초반에는 휴식과 냉찜질이 도움이 될 수 있고, 통증이 가라앉는 동안에는 자전거, 걷기, 가벼운 코어 운동처럼 부담이 적은 대체 운동을 고려할 수 있습니다.',
+      },
+      {
+        title: '복귀는 단계적으로',
+        body:
+          '통증이 사라졌다고 바로 원래 훈련량으로 돌아가기보다 짧고 쉬운 러닝부터 다시 시작하는 편이 안전합니다. 붓기, 절뚝거림, 압통이 남아 있으면 전문 진료를 우선해야 합니다.',
+      },
+    ],
   },
 }
 
@@ -1580,6 +1713,74 @@ function App() {
               </p>
             )}
           </section>
+        </section>
+      ) : null}
+
+      {!hiddenPage &&
+      (activePage === 'injury-types' ||
+        activePage === 'injury-prevention' ||
+        activePage === 'injury-recovery') ? (
+        <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() =>
+                handleNavigationSelect(leafPageMeta[activePage as LeafPage].parent)
+              }
+            >
+              {leafPageMeta[activePage as LeafPage].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta[activePage as LeafPage].parentLabel} /{' '}
+              {leafPageMeta[activePage as LeafPage].label}
+            </span>
+          </div>
+
+          <div className="hero-copy">
+            <span className="eyebrow">
+              {injuryPageContent[activePage as keyof typeof injuryPageContent].eyebrow}
+            </span>
+            <h1>{injuryPageContent[activePage as keyof typeof injuryPageContent].title}</h1>
+            <p className="lead">
+              {injuryPageContent[activePage as keyof typeof injuryPageContent].lead}
+            </p>
+          </div>
+
+          <section className="site-footer site-footer-embedded" aria-label="부상 정보">
+            {injuryPageContent[activePage as keyof typeof injuryPageContent].sections.map(
+              (section) => (
+                <article className="info-card" key={section.title}>
+                  <h2>{section.title}</h2>
+                  <p>{section.body}</p>
+                </article>
+              ),
+            )}
+          </section>
+        </section>
+      ) : null}
+
+      {!hiddenPage && activePage === 'injury-ai-diagnosis' ? (
+        <section className="hero-card placeholder-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['injury-ai-diagnosis'].parent)}
+            >
+              {leafPageMeta['injury-ai-diagnosis'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['injury-ai-diagnosis'].parentLabel} /{' '}
+              {leafPageMeta['injury-ai-diagnosis'].label}
+            </span>
+          </div>
+
+          <div className="placeholder-copy">
+            <span className="eyebrow">ai diagnosis</span>
+            <h1>AI진단</h1>
+            <p>준비중입니다.</p>
+          </div>
         </section>
       ) : null}
 
