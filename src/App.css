@@ -155,6 +155,7 @@
 
 .home-feature-grid {
   margin-top: 28px;
+  width: 100%;
 }
 
 .site-footer {
@@ -184,6 +185,52 @@
 .info-card p {
   margin: 0;
   color: var(--text);
+}
+
+.home-info-card {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.home-highlight {
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1;
+  color: var(--text-h);
+}
+
+.home-meta-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.home-meta-list div {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  display: grid;
+  gap: 4px;
+}
+
+.home-meta-list dt {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
+.home-meta-list dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.home-empty-card {
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .eyebrow {
@@ -1053,6 +1100,10 @@ input:focus {
 
   .home-feature-grid,
   .site-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .home-meta-list {
     grid-template-columns: 1fr;
   }
 

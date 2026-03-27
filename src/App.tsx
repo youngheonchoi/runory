@@ -372,6 +372,21 @@ const seoulWeatherCity = {
   lon: 126.978,
 }
 
+const homeQuotes = [
+  '오늘의 한 걸음이 내일의 변화를 만든다.',
+  '천천히 달려도, 멈추지 않으면 앞으로 간다.',
+  '러닝은 기록과의 싸움이 아니라, 어제의 나를 넘는 일이다.',
+  '힘들다는 건, 내가 성장하고 있다는 신호다.',
+  '한 바퀴 더 도는 사람이 결국 끝까지 간다.',
+  '러닝은 몸으로 하는 명상이다.',
+  '땀은 거짓말하지 않는다.',
+  '달리는 동안, 마음도 함께 가벼워진다.',
+  '완벽한 출발보다 중요한 건 꾸준한 발걸음이다.',
+  '포기하고 싶은 순간이, 가장 강해지는 순간이다.',
+  '느려도 괜찮다. 중요한 건 계속 뛰는 것이다.',
+  '러닝은 목적지보다 과정이 더 많은 걸 가르쳐준다.',
+]
+
 const raceItems: RaceItem[] = Array.from({ length: 50 }, (_, index) => {
   const city = raceCities[index % raceCities.length]
   const theme = raceThemes[index % raceThemes.length]
@@ -635,6 +650,33 @@ function App() {
     })
   }, [raceCategoryFilter, raceLocationFilter, raceNameQuery, raceStatusFilter])
 
+  const homeQuote = useMemo(() => {
+    return homeQuotes[Math.floor(Math.random() * homeQuotes.length)]
+  }, [])
+
+  const homeWeekRaces = useMemo(() => {
+    const today = new Date()
+    const dayOfWeek = today.getDay()
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+    const startOfWeek = new Date(today)
+    startOfWeek.setHours(0, 0, 0, 0)
+    startOfWeek.setDate(today.getDate() + mondayOffset)
+
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6)
+    endOfWeek.setHours(23, 59, 59, 999)
+
+    return raceItems
+      .filter((race) => {
+        if (race.status === '대회종료') return false
+
+        const raceDate = new Date(`${race.date}T00:00:00`)
+        return raceDate >= startOfWeek && raceDate <= endOfWeek
+      })
+      .sort((left, right) => left.date.localeCompare(right.date))
+      .slice(0, 4)
+  }, [])
+
   const handleResetRaceFilters = () => {
     setRaceNameQuery('')
     setRaceCategoryFilter('')
@@ -751,14 +793,14 @@ function App() {
   }
 
   useEffect(() => {
-    if (activePage !== 'weather') {
+    if (activePage !== 'weather' && activePage !== 'home') {
       setWeatherAutoRequested(false)
     }
   }, [activePage])
 
   useEffect(() => {
     if (
-      activePage !== 'weather' ||
+      (activePage !== 'weather' && activePage !== 'home') ||
       weatherResult ||
       weatherLoading ||
       weatherAutoRequested
@@ -872,10 +914,79 @@ function App() {
       {!hiddenPage && activePage === 'home' ? (
         <section className="hero-card home-card">
           <div className="home-mark">
-            <span className="eyebrow">Running Info</span>
-            <h1 className="home-title">RUNORY</h1>
-            <p className="home-description">러닝에 필요한 정보와 도구를 한 곳에서 정리합니다.</p>
+            <p className="home-description">{homeQuote}</p>
           </div>
+
+          <section className="home-feature-grid" aria-label="오늘의 날씨">
+            <article className="info-card home-info-card">
+              <span className="shoe-category">Today Weather</span>
+              <h2>오늘의 날씨</h2>
+              {weatherResult ? (
+                <>
+                  <strong className="home-highlight">
+                    {weatherResult.summary.nextSlot.temperature.toFixed(1)}°C
+                  </strong>
+                  <p>
+                    {weatherResult.summary.nextSlot.timeLabel} ·{' '}
+                    {weatherResult.summary.nextSlot.description}
+                  </p>
+                  <dl className="home-meta-list">
+                    <div>
+                      <dt>체감온도</dt>
+                      <dd>{weatherResult.summary.nextSlot.feelsLike.toFixed(1)}°C</dd>
+                    </div>
+                    <div>
+                      <dt>강수확률</dt>
+                      <dd>{Math.round(weatherResult.summary.nextSlot.pop * 100)}%</dd>
+                    </div>
+                    <div>
+                      <dt>기준 도시</dt>
+                      <dd>{weatherResult.city.name}</dd>
+                    </div>
+                  </dl>
+                  <p>{weatherResult.summary.caution}</p>
+                </>
+              ) : weatherLoading ? (
+                <p>오늘 날씨 정보를 불러오는 중입니다.</p>
+              ) : weatherError ? (
+                <p>{weatherError}</p>
+              ) : (
+                <p>오늘 날씨 정보를 준비 중입니다.</p>
+              )}
+            </article>
+          </section>
+
+          <section className="site-footer site-footer-embedded" aria-label="이번 주 대회">
+            {homeWeekRaces.length > 0 ? (
+              homeWeekRaces.map((race) => (
+                <article className="info-card" key={`${race.name}-${race.date}`}>
+                  <span className="shoe-category">{race.category}</span>
+                  <h2>{race.name}</h2>
+                  <p>{race.note}</p>
+                  <dl className="home-meta-list">
+                    <div>
+                      <dt>일정</dt>
+                      <dd>{race.date}</dd>
+                    </div>
+                    <div>
+                      <dt>지역</dt>
+                      <dd>{race.location}</dd>
+                    </div>
+                    <div>
+                      <dt>상태</dt>
+                      <dd>{race.status}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))
+            ) : (
+              <article className="info-card home-empty-card">
+                <span className="shoe-category">This Week</span>
+                <h2>이번 주 예정 대회</h2>
+                <p>이번 주에 표시할 예정 대회가 없습니다.</p>
+              </article>
+            )}
+          </section>
         </section>
       ) : null}
 
