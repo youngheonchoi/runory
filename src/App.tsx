@@ -892,6 +892,12 @@ function App() {
 
   return (
     <main className="page">
+      <header className="site-header" aria-label="공통 헤더">
+        <div className="site-header__inner">
+          <span className="site-header__brand">RUNORY</span>
+        </div>
+      </header>
+
       {hiddenPage ? (
         <section className="hero-card">
           <div className="hero-copy">
