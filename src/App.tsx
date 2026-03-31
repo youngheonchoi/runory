@@ -3,7 +3,18 @@ import './App.css'
 
 type Gender = 'male' | 'female' | 'other'
 type RunningGoal = 'beginner' | 'daily' | 'long' | 'speed' | 'trail'
-type NavSection = 'home' | 'race' | 'calculator' | 'recommend' | 'training'
+type TopLevelSection = 'home' | 'race' | 'tools' | 'gear' | 'injury'
+type LeafPage =
+  | 'race-schedule'
+  | 'pace-calculator'
+  | 'training-plan'
+  | 'weather'
+  | 'shoe-recommend'
+  | 'injury-types'
+  | 'injury-prevention'
+  | 'injury-recovery'
+  | 'injury-ai-diagnosis'
+type AppPage = TopLevelSection | LeafPage
 type RaceCategory = '10k' | 'half' | 'full'
 type HiddenPage = 'site-info' | 'privacy-policy' | 'ad-policy' | 'contact' | null
 
@@ -48,17 +59,280 @@ type RaceItem = {
   note: string
 }
 
+type WeatherForecastItem = {
+  timestamp: number
+  timeLabel: string
+  temperature: number
+  feelsLike: number
+  humidity: number
+  windSpeed: number
+  pop: number
+  description: string
+  icon: string
+}
+
+type WeatherDaySummary = {
+  date: string
+  label: string
+  minTemp: number
+  maxTemp: number
+  avgPop: number
+  topDescription: string
+}
+
+type WeatherResponse = {
+  city: {
+    name: string
+    country: string
+  }
+  summary: {
+    nextSlot: WeatherForecastItem
+    bestWindow: WeatherForecastItem
+    caution: string
+  }
+  days: WeatherDaySummary[]
+  forecast: WeatherForecastItem[]
+}
+
+type HubCard = {
+  id: LeafPage
+  title: string
+  description: string
+  badge: string
+}
+
 const navigationItems: Array<{
-  id: NavSection
+  id: TopLevelSection
   label: string
   shortLabel: string
 }> = [
-  { id: 'home', label: '홈', shortLabel: 'Home' },
+  { id: 'home', label: '메인', shortLabel: 'Main' },
   { id: 'race', label: '대회', shortLabel: 'Race' },
-  { id: 'calculator', label: '계산기', shortLabel: 'Calc' },
-  { id: 'recommend', label: '추천', shortLabel: 'Pick' },
-  { id: 'training', label: '훈련', shortLabel: 'Train' },
+  { id: 'tools', label: '도구', shortLabel: 'Tools' },
+  { id: 'gear', label: '장비', shortLabel: 'Gear' },
+  { id: 'injury', label: '부상', shortLabel: 'Care' },
 ]
+
+const hubPages: Record<
+  Exclude<TopLevelSection, 'home'>,
+  {
+    eyebrow: string
+    title: string
+    lead: string
+    cards: HubCard[]
+  }
+> = {
+  race: {
+    eyebrow: 'race hub',
+    title: '대회 허브',
+    lead: '참가 가능한 러닝 대회 일정을 모아보고, 조건별로 빠르게 비교할 수 있습니다.',
+    cards: [
+      {
+        id: 'race-schedule',
+        title: '대회일정',
+        description: '대회명, 종목, 지역, 상태 기준으로 러닝 대회 일정을 탐색합니다.',
+        badge: 'Schedule',
+      },
+    ],
+  },
+  tools: {
+    eyebrow: 'running tools',
+    title: '러닝도구 허브',
+    lead: '페이스 확인부터 목표 대회 준비까지, 실전에 필요한 도구를 한 화면에서 고를 수 있습니다.',
+    cards: [
+      {
+        id: 'pace-calculator',
+        title: '페이스 계산기',
+        description: '거리와 기록을 넣으면 1km 기준 평균 페이스를 바로 계산합니다.',
+        badge: 'Calculator',
+      },
+      {
+        id: 'training-plan',
+        title: '훈련 계획표 추출',
+        description: '기록과 목표 대회 정보를 바탕으로 주차별 훈련 계획표를 생성합니다.',
+        badge: 'Planner',
+      },
+      {
+        id: 'weather',
+        title: '날씨',
+        description: '러닝 전 확인이 필요한 날씨 정보를 연결할 수 있는 메뉴입니다.',
+        badge: 'Weather',
+      },
+    ],
+  },
+  gear: {
+    eyebrow: 'gear hub',
+    title: '장비 허브',
+    lead: '러닝 장비 선택이 필요한 순간에 맞춰 핵심 추천 도구로 바로 이동할 수 있습니다.',
+    cards: [
+      {
+        id: 'shoe-recommend',
+        title: '러닝화 추천',
+        description: '성별, 발사이즈, 러닝 목적을 바탕으로 러닝화 후보를 정리합니다.',
+        badge: 'Shoes',
+      },
+    ],
+  },
+  injury: {
+    eyebrow: 'injury hub',
+    title: '부상 허브',
+    lead: '러닝 중 자주 접하는 부상 정보와 예방, 회복 팁을 빠르게 확인할 수 있습니다.',
+    cards: [
+      {
+        id: 'injury-types',
+        title: '부상종류',
+        description: '러너에게 흔한 부상 유형과 특징을 간단히 정리합니다.',
+        badge: 'Types',
+      },
+      {
+        id: 'injury-prevention',
+        title: '부상예방',
+        description: '훈련 전후 습관과 장비 선택 관점에서 예방 포인트를 안내합니다.',
+        badge: 'Prevent',
+      },
+      {
+        id: 'injury-recovery',
+        title: '회복',
+        description: '통증 발생 후 회복 단계에서 점검할 기본 원칙을 정리합니다.',
+        badge: 'Recover',
+      },
+      {
+        id: 'injury-ai-diagnosis',
+        title: 'AI진단',
+        description: '러닝 중 통증 상황을 바탕으로 진단 보조 기능을 준비 중입니다.',
+        badge: 'AI',
+      },
+    ],
+  },
+}
+
+const leafPageMeta: Record<
+  LeafPage,
+  { parent: Exclude<TopLevelSection, 'home'>; parentLabel: string; label: string }
+> = {
+  'race-schedule': {
+    parent: 'race',
+    parentLabel: '대회',
+    label: '대회일정',
+  },
+  'pace-calculator': {
+    parent: 'tools',
+    parentLabel: '러닝도구',
+    label: '페이스 계산기',
+  },
+  'training-plan': {
+    parent: 'tools',
+    parentLabel: '러닝도구',
+    label: '훈련 계획표 추출',
+  },
+  weather: {
+    parent: 'tools',
+    parentLabel: '러닝도구',
+    label: '날씨',
+  },
+  'shoe-recommend': {
+    parent: 'gear',
+    parentLabel: '장비',
+    label: '러닝화 추천',
+  },
+  'injury-types': {
+    parent: 'injury',
+    parentLabel: '부상',
+    label: '부상종류',
+  },
+  'injury-prevention': {
+    parent: 'injury',
+    parentLabel: '부상',
+    label: '부상예방',
+  },
+  'injury-recovery': {
+    parent: 'injury',
+    parentLabel: '부상',
+    label: '회복',
+  },
+  'injury-ai-diagnosis': {
+    parent: 'injury',
+    parentLabel: '부상',
+    label: 'AI진단',
+  },
+}
+
+const injuryPageContent: Record<
+  Extract<LeafPage, 'injury-types' | 'injury-prevention' | 'injury-recovery'>,
+  {
+    eyebrow: string
+    title: string
+    lead: string
+    sections: Array<{ title: string; body: string }>
+  }
+> = {
+  'injury-types': {
+    eyebrow: 'injury types',
+    title: '러닝 부상 종류',
+    lead: '아래 내용은 임시 안내이며, 통증이 심하거나 오래가면 진료가 우선입니다.',
+    sections: [
+      {
+        title: '무릎 통증',
+        body:
+          '러너스 니로 불리는 슬개대퇴 통증 증후군은 러닝 후 무릎 앞쪽이 뻐근하거나 계단에서 불편한 형태로 자주 나타납니다. 갑작스러운 거리 증가나 하체 근력 불균형이 원인이 될 수 있습니다.',
+      },
+      {
+        title: '정강이 통증',
+        body:
+          '정강이 안쪽이 욱신거리는 신 스플린트는 초보 러너나 훈련량을 급하게 올린 경우 흔합니다. 딱딱한 노면, 부족한 회복, 닳은 신발이 겹치면 더 잘 생깁니다.',
+      },
+      {
+        title: '아킬레스와 발바닥 통증',
+        body:
+          '아킬레스건 통증과 족저근막 자극은 종아리 뻣뻣함, 발뒤꿈치 통증과 함께 나타날 수 있습니다. 스피드 훈련이나 언덕 훈련이 많을 때 부담이 커지기 쉽습니다.',
+      },
+    ],
+  },
+  'injury-prevention': {
+    eyebrow: 'injury prevention',
+    title: '러닝 부상 예방',
+    lead: '무리하지 않는 훈련 설계와 기본 습관만 정리해도 부상 확률을 꽤 낮출 수 있습니다.',
+    sections: [
+      {
+        title: '훈련량은 천천히 올리기',
+        body:
+          '주간 거리와 강도를 한 번에 크게 올리지 말고 점진적으로 조정하는 편이 안전합니다. 특히 인터벌, 언덕, 장거리 훈련을 같은 주에 몰아넣으면 피로 누적이 빠릅니다.',
+      },
+      {
+        title: '워밍업과 근력 보강',
+        body:
+          '러닝 전 가벼운 조깅과 관절 가동성 운동으로 몸을 풀고, 평소에는 둔근과 종아리, 햄스트링 보강을 해두는 것이 좋습니다. 자세가 무너질수록 특정 부위에 스트레스가 집중됩니다.',
+      },
+      {
+        title: '신발과 회복 관리',
+        body:
+          '발에 맞지 않거나 마모된 신발은 반복 충격을 키울 수 있습니다. 수면, 수분, 휴식일 확보도 예방의 일부라서 훈련만큼 중요하게 봐야 합니다.',
+      },
+    ],
+  },
+  'injury-recovery': {
+    eyebrow: 'recovery',
+    title: '러닝 후 회복 가이드',
+    lead: '통증이 생긴 뒤에는 참으면서 뛰는 것보다 강도를 낮추고 상태를 구분하는 판단이 먼저입니다.',
+    sections: [
+      {
+        title: '통증이 있으면 강도 즉시 낮추기',
+        body:
+          '러닝 중 통증이 점점 선명해지면 그날 훈련은 줄이거나 중단하는 편이 낫습니다. 초기에 무리하면 가벼운 자극이 장기적인 부상으로 번질 수 있습니다.',
+      },
+      {
+        title: '냉온 관리와 대체 운동',
+        body:
+          '염증감이 강한 초반에는 휴식과 냉찜질이 도움이 될 수 있고, 통증이 가라앉는 동안에는 자전거, 걷기, 가벼운 코어 운동처럼 부담이 적은 대체 운동을 고려할 수 있습니다.',
+      },
+      {
+        title: '복귀는 단계적으로',
+        body:
+          '통증이 사라졌다고 바로 원래 훈련량으로 돌아가기보다 짧고 쉬운 러닝부터 다시 시작하는 편이 안전합니다. 붓기, 절뚝거림, 압통이 남아 있으면 전문 진료를 우선해야 합니다.',
+      },
+    ],
+  },
+}
 
 const raceCities = [
   '서울',
@@ -89,6 +363,28 @@ const raceNotes = [
   '업다운이 섞인 코스로 지구력 훈련용으로 좋음',
   '야간 운영 구간이 포함되어 분위기가 선명함',
   '가족 참가 부문과 메인 레이스가 함께 운영됨',
+]
+
+const seoulWeatherCity = {
+  id: 'seoul',
+  name: '서울',
+  lat: 37.5665,
+  lon: 126.978,
+}
+
+const homeQuotes = [
+  '오늘의 한 걸음이 내일의 변화를 만든다.',
+  '천천히 달려도, 멈추지 않으면 앞으로 간다.',
+  '러닝은 기록과의 싸움이 아니라, 어제의 나를 넘는 일이다.',
+  '힘들다는 건, 내가 성장하고 있다는 신호다.',
+  '한 바퀴 더 도는 사람이 결국 끝까지 간다.',
+  '러닝은 몸으로 하는 명상이다.',
+  '땀은 거짓말하지 않는다.',
+  '달리는 동안, 마음도 함께 가벼워진다.',
+  '완벽한 출발보다 중요한 건 꾸준한 발걸음이다.',
+  '포기하고 싶은 순간이, 가장 강해지는 순간이다.',
+  '느려도 괜찮다. 중요한 건 계속 뛰는 것이다.',
+  '러닝은 목적지보다 과정이 더 많은 걸 가르쳐준다.',
 ]
 
 const raceItems: RaceItem[] = Array.from({ length: 50 }, (_, index) => {
@@ -262,7 +558,7 @@ function getHiddenPageFromUrl(): HiddenPage {
 }
 
 function App() {
-  const [activeSection, setActiveSection] = useState<NavSection>('home')
+  const [activePage, setActivePage] = useState<AppPage>('home')
   const [hiddenPage, setHiddenPage] = useState<HiddenPage>(() => getHiddenPageFromUrl())
   const [raceNameQuery, setRaceNameQuery] = useState('')
   const [raceCategoryFilter, setRaceCategoryFilter] = useState('')
@@ -289,6 +585,10 @@ function App() {
   const [averageTrainingPace, setAverageTrainingPace] = useState('')
   const [result, setResult] = useState<RecommendationResponse | null>(null)
   const [trainingResult, setTrainingResult] = useState<TrainingPlanResponse | null>(null)
+  const [weatherResult, setWeatherResult] = useState<WeatherResponse | null>(null)
+  const [weatherLoading, setWeatherLoading] = useState(false)
+  const [weatherError, setWeatherError] = useState('')
+  const [weatherAutoRequested, setWeatherAutoRequested] = useState(false)
   const [loading, setLoading] = useState(false)
   const [trainingLoading, setTrainingLoading] = useState(false)
   const [error, setError] = useState('')
@@ -349,6 +649,33 @@ function App() {
       return matchName && matchCategory && matchLocation && matchStatus
     })
   }, [raceCategoryFilter, raceLocationFilter, raceNameQuery, raceStatusFilter])
+
+  const homeQuote = useMemo(() => {
+    return homeQuotes[Math.floor(Math.random() * homeQuotes.length)]
+  }, [])
+
+  const homeWeekRaces = useMemo(() => {
+    const today = new Date()
+    const dayOfWeek = today.getDay()
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+    const startOfWeek = new Date(today)
+    startOfWeek.setHours(0, 0, 0, 0)
+    startOfWeek.setDate(today.getDate() + mondayOffset)
+
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6)
+    endOfWeek.setHours(23, 59, 59, 999)
+
+    return raceItems
+      .filter((race) => {
+        if (race.status === '대회종료') return false
+
+        const raceDate = new Date(`${race.date}T00:00:00`)
+        return raceDate >= startOfWeek && raceDate <= endOfWeek
+      })
+      .sort((left, right) => left.date.localeCompare(right.date))
+      .slice(0, 4)
+  }, [])
 
   const handleResetRaceFilters = () => {
     setRaceNameQuery('')
@@ -466,6 +793,68 @@ function App() {
   }
 
   useEffect(() => {
+    if (activePage !== 'weather' && activePage !== 'home') {
+      setWeatherAutoRequested(false)
+    }
+  }, [activePage])
+
+  useEffect(() => {
+    if (
+      (activePage !== 'weather' && activePage !== 'home') ||
+      weatherResult ||
+      weatherLoading ||
+      weatherAutoRequested
+    ) {
+      return
+    }
+
+    setWeatherAutoRequested(true)
+
+    void (async () => {
+      setWeatherLoading(true)
+      setWeatherError('')
+
+      try {
+        const response = await fetch('/api/weather', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            cityName: seoulWeatherCity.name,
+            lat: seoulWeatherCity.lat,
+            lon: seoulWeatherCity.lon,
+          }),
+        })
+
+        const payload = (await response.json()) as
+          | WeatherResponse
+          | { error?: string; details?: string }
+
+        if (!response.ok) {
+          throw new Error(
+            'error' in payload && payload.error
+              ? [payload.error, payload.details].filter(Boolean).join('\n\n')
+              : '날씨 정보를 받아오지 못했습니다.',
+          )
+        }
+
+        if ('forecast' in payload) {
+          setWeatherResult(payload)
+        }
+      } catch (caught) {
+        const message =
+          caught instanceof Error
+            ? caught.message
+            : '날씨 요청 중 알 수 없는 오류가 발생했습니다.'
+        setWeatherError(message)
+      } finally {
+        setWeatherLoading(false)
+      }
+    })()
+  }, [activePage, weatherAutoRequested, weatherLoading, weatherResult])
+
+  useEffect(() => {
     const syncHiddenPage = () => {
       setHiddenPage(getHiddenPageFromUrl())
     }
@@ -480,8 +869,16 @@ function App() {
     }
   }, [])
 
-  const handleNavigationSelect = (section: NavSection) => {
-    setActiveSection(section)
+  const activeTopLevel = useMemo<TopLevelSection>(() => {
+    if (activePage in leafPageMeta) {
+      return leafPageMeta[activePage as LeafPage].parent
+    }
+
+    return activePage as TopLevelSection
+  }, [activePage])
+
+  const handleNavigationSelect = (section: TopLevelSection) => {
+    setActivePage(section)
 
     if (hiddenPage && typeof window !== 'undefined') {
       window.history.replaceState(null, '', '/')
@@ -489,8 +886,18 @@ function App() {
     }
   }
 
+  const handleLeafNavigation = (page: LeafPage) => {
+    setActivePage(page)
+  }
+
   return (
     <main className="page">
+      <header className="site-header" aria-label="공통 헤더">
+        <div className="site-header__inner">
+          <span className="site-header__brand">RUNORY</span>
+        </div>
+      </header>
+
       {hiddenPage ? (
         <section className="hero-card">
           <div className="hero-copy">
@@ -510,18 +917,127 @@ function App() {
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'home' ? (
+      {!hiddenPage && activePage === 'home' ? (
         <section className="hero-card home-card">
           <div className="home-mark">
-            <span className="eyebrow">Running Info</span>
-            <h1 className="home-title">RUNORY</h1>
-            <p className="home-description">러닝에 필요한 정보와 도구를 한 곳에서 정리합니다.</p>
+            <p className="home-description">{homeQuote}</p>
           </div>
+
+          <section className="home-feature-grid" aria-label="오늘의 날씨">
+            <article className="info-card home-info-card">
+              <span className="shoe-category">Today Weather</span>
+              <h2>오늘의 날씨</h2>
+              {weatherResult ? (
+                <>
+                  <strong className="home-highlight">
+                    {weatherResult.summary.nextSlot.temperature.toFixed(1)}°C
+                  </strong>
+                  <p>
+                    {weatherResult.summary.nextSlot.timeLabel} ·{' '}
+                    {weatherResult.summary.nextSlot.description}
+                  </p>
+                  <dl className="home-meta-list">
+                    <div>
+                      <dt>체감온도</dt>
+                      <dd>{weatherResult.summary.nextSlot.feelsLike.toFixed(1)}°C</dd>
+                    </div>
+                    <div>
+                      <dt>강수확률</dt>
+                      <dd>{Math.round(weatherResult.summary.nextSlot.pop * 100)}%</dd>
+                    </div>
+                    <div>
+                      <dt>기준 도시</dt>
+                      <dd>{weatherResult.city.name}</dd>
+                    </div>
+                  </dl>
+                  <p>{weatherResult.summary.caution}</p>
+                </>
+              ) : weatherLoading ? (
+                <p>오늘 날씨 정보를 불러오는 중입니다.</p>
+              ) : weatherError ? (
+                <p>{weatherError}</p>
+              ) : (
+                <p>오늘 날씨 정보를 준비 중입니다.</p>
+              )}
+            </article>
+          </section>
+
+          <section className="site-footer site-footer-embedded" aria-label="이번 주 대회">
+            {homeWeekRaces.length > 0 ? (
+              homeWeekRaces.map((race) => (
+                <article className="info-card" key={`${race.name}-${race.date}`}>
+                  <span className="shoe-category">{race.category}</span>
+                  <h2>{race.name}</h2>
+                  <p>{race.note}</p>
+                  <dl className="home-meta-list">
+                    <div>
+                      <dt>일정</dt>
+                      <dd>{race.date}</dd>
+                    </div>
+                    <div>
+                      <dt>지역</dt>
+                      <dd>{race.location}</dd>
+                    </div>
+                    <div>
+                      <dt>상태</dt>
+                      <dd>{race.status}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))
+            ) : (
+              <article className="info-card home-empty-card">
+                <span className="shoe-category">This Week</span>
+                <h2>이번 주 예정 대회</h2>
+                <p>이번 주에 표시할 예정 대회가 없습니다.</p>
+              </article>
+            )}
+          </section>
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'recommend' ? (
+      {!hiddenPage && activePage !== 'home' && activePage in hubPages ? (
         <section className="hero-card">
+          <div className="hero-copy">
+            <span className="eyebrow">{hubPages[activePage as Exclude<TopLevelSection, 'home'>].eyebrow}</span>
+            <h1>{hubPages[activePage as Exclude<TopLevelSection, 'home'>].title}</h1>
+            <p className="lead">{hubPages[activePage as Exclude<TopLevelSection, 'home'>].lead}</p>
+          </div>
+
+          <section className="hub-grid" aria-label={`${navigationItems.find((item) => item.id === activePage)?.label} 하위 메뉴`}>
+            {hubPages[activePage as Exclude<TopLevelSection, 'home'>].cards.map((card) => (
+              <article className="hub-card" key={card.id}>
+                <span className="shoe-category">{card.badge}</span>
+                <h2>{card.title}</h2>
+                <p>{card.description}</p>
+                <button
+                  className="hub-card-button"
+                  type="button"
+                  onClick={() => handleLeafNavigation(card.id)}
+                >
+                  이동하기
+                </button>
+              </article>
+            ))}
+          </section>
+        </section>
+      ) : null}
+
+      {!hiddenPage && activePage === 'shoe-recommend' ? (
+        <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['shoe-recommend'].parent)}
+            >
+              {leafPageMeta['shoe-recommend'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['shoe-recommend'].parentLabel} / {leafPageMeta['shoe-recommend'].label}
+            </span>
+          </div>
+
           <div className="hero-copy">
             <span className="eyebrow">pick</span>
             <h1>러닝화 추천을 위한 정보를 입력하세요</h1>
@@ -663,8 +1179,21 @@ function App() {
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'calculator' ? (
+      {!hiddenPage && activePage === 'pace-calculator' ? (
         <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['pace-calculator'].parent)}
+            >
+              {leafPageMeta['pace-calculator'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['pace-calculator'].parentLabel} / {leafPageMeta['pace-calculator'].label}
+            </span>
+          </div>
+
           <div className="hero-copy">
             <span className="eyebrow">calc</span>
             <h1>페이스 계산기</h1>
@@ -766,8 +1295,21 @@ function App() {
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'race' ? (
+      {!hiddenPage && activePage === 'race-schedule' ? (
         <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['race-schedule'].parent)}
+            >
+              {leafPageMeta['race-schedule'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['race-schedule'].parentLabel} / {leafPageMeta['race-schedule'].label}
+            </span>
+          </div>
+
           <div className="hero-copy">
             <span className="eyebrow">race</span>
             <h1>대회 찾기</h1>
@@ -892,8 +1434,21 @@ function App() {
         </section>
       ) : null}
 
-      {!hiddenPage && activeSection === 'training' ? (
+      {!hiddenPage && activePage === 'training-plan' ? (
         <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['training-plan'].parent)}
+            >
+              {leafPageMeta['training-plan'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['training-plan'].parentLabel} / {leafPageMeta['training-plan'].label}
+            </span>
+          </div>
+
           <div className="hero-copy">
             <span className="eyebrow">train</span>
             <h1>훈련 계획표 추출</h1>
@@ -1174,15 +1729,186 @@ function App() {
         </section>
       ) : null}
 
-      {activeSection !== 'home' &&
-      activeSection !== 'recommend' &&
-      activeSection !== 'calculator' &&
-      activeSection !== 'race' &&
-      activeSection !== 'training' ? (
+      {!hiddenPage && activePage === 'weather' ? (
+        <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta.weather.parent)}
+            >
+              {leafPageMeta.weather.parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta.weather.parentLabel} / {leafPageMeta.weather.label}
+            </span>
+          </div>
+
+          <div className="hero-copy">
+            <span className="eyebrow">weather</span>
+            <h1>러닝 날씨</h1>
+            <p className="lead">
+              서울 기준 OpenWeather 5일 / 3시간 예보를 바탕으로 러닝 전 확인이 필요한 기온, 강수확률, 바람 정보를 확인합니다.
+            </p>
+          </div>
+
+          <div className="weather-layout">
+            <aside className="summary-card weather-summary" aria-label="러닝 날씨 요약">
+              <div className="summary-header">
+                <span>오늘 날씨 정보</span>
+                <span className={weatherResult ? 'status ready' : 'status'}>
+                  {weatherResult ? weatherResult.city.name : '대기'}
+                </span>
+              </div>
+
+              {weatherResult ? (
+                <>
+                  <div className="weather-primary-card">
+                    <span className="pace-caption">가장 가까운 예보</span>
+                    <strong>
+                      {weatherResult.summary.nextSlot.temperature.toFixed(1)}°C
+                    </strong>
+                    <p>
+                      {weatherResult.summary.nextSlot.timeLabel} ·{' '}
+                      {weatherResult.summary.nextSlot.description}
+                    </p>
+                  </div>
+
+                  <dl className="summary-list">
+                    <div>
+                      <dt>체감온도</dt>
+                      <dd>{weatherResult.summary.nextSlot.feelsLike.toFixed(1)}°C</dd>
+                    </div>
+                    <div>
+                      <dt>강수확률</dt>
+                      <dd>{Math.round(weatherResult.summary.nextSlot.pop * 100)}%</dd>
+                    </div>
+                  </dl>
+
+                  <p className="summary-note">{weatherResult.summary.caution}</p>
+                </>
+              ) : (
+                <p className="results-empty">
+                  서울 기준 날씨 요약을 불러오면 여기에 표시됩니다.
+                </p>
+              )}
+            </aside>
+          </div>
+
+          <section className="results" aria-label="5일 예보 결과">
+            <div className="results-head">
+              <div>
+                <h2>{weatherLoading ? '날씨 불러오는 중' : '5일 예보'}</h2>
+              </div>
+            </div>
+
+            {weatherLoading ? (
+              <p className="results-tip">OpenWeather 예보 데이터를 정리하는 중입니다.</p>
+            ) : weatherError ? (
+              <div className="error-box" role="alert">
+                <strong>날씨 조회 실패</strong>
+                <p>{weatherError}</p>
+              </div>
+            ) : weatherResult ? (
+              <>
+                <div className="weather-day-grid">
+                  {weatherResult.days.map((day) => (
+                    <article className="weather-primary-card" key={day.date}>
+                      <span className="shoe-category">{day.label}</span>
+                      <h3>{day.topDescription}</h3>
+                      <p>
+                        {day.minTemp.toFixed(1)}°C ~ {day.maxTemp.toFixed(1)}°C
+                      </p>
+                      <p>평균 강수확률 {Math.round(day.avgPop * 100)}%</p>
+                    </article>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="results-empty">
+                서울 기준 예보를 불러오면 여기에 5일 / 3시간 날씨 정보가 표시됩니다.
+              </p>
+            )}
+          </section>
+        </section>
+      ) : null}
+
+      {!hiddenPage &&
+      (activePage === 'injury-types' ||
+        activePage === 'injury-prevention' ||
+        activePage === 'injury-recovery') ? (
+        <section className="hero-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() =>
+                handleNavigationSelect(leafPageMeta[activePage as LeafPage].parent)
+              }
+            >
+              {leafPageMeta[activePage as LeafPage].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta[activePage as LeafPage].parentLabel} /{' '}
+              {leafPageMeta[activePage as LeafPage].label}
+            </span>
+          </div>
+
+          <div className="hero-copy">
+            <span className="eyebrow">
+              {injuryPageContent[activePage as keyof typeof injuryPageContent].eyebrow}
+            </span>
+            <h1>{injuryPageContent[activePage as keyof typeof injuryPageContent].title}</h1>
+            <p className="lead">
+              {injuryPageContent[activePage as keyof typeof injuryPageContent].lead}
+            </p>
+          </div>
+
+          <section className="site-footer site-footer-embedded" aria-label="부상 정보">
+            {injuryPageContent[activePage as keyof typeof injuryPageContent].sections.map(
+              (section) => (
+                <article className="info-card" key={section.title}>
+                  <h2>{section.title}</h2>
+                  <p>{section.body}</p>
+                </article>
+              ),
+            )}
+          </section>
+        </section>
+      ) : null}
+
+      {!hiddenPage && activePage === 'injury-ai-diagnosis' ? (
+        <section className="hero-card placeholder-card">
+          <div className="section-rail">
+            <button
+              className="section-back"
+              type="button"
+              onClick={() => handleNavigationSelect(leafPageMeta['injury-ai-diagnosis'].parent)}
+            >
+              {leafPageMeta['injury-ai-diagnosis'].parentLabel}
+            </button>
+            <span className="section-path">
+              {leafPageMeta['injury-ai-diagnosis'].parentLabel} /{' '}
+              {leafPageMeta['injury-ai-diagnosis'].label}
+            </span>
+          </div>
+
+          <div className="placeholder-copy">
+            <span className="eyebrow">ai diagnosis</span>
+            <h1>AI진단</h1>
+            <p>준비중입니다.</p>
+          </div>
+        </section>
+      ) : null}
+
+      {!hiddenPage &&
+      activePage !== 'home' &&
+      !(activePage in hubPages) &&
+      !(activePage in leafPageMeta) ? (
         <section className="hero-card placeholder-card">
           <div className="placeholder-copy">
             <span className="eyebrow">RUNORY</span>
-            <h1>{navigationItems.find((item) => item.id === activeSection)?.label}</h1>
+            <h1>{navigationItems.find((item) => item.id === activePage)?.label}</h1>
             <p>이 화면은 다음 단계에서 연결할 예정입니다.</p>
           </div>
         </section>
@@ -1195,9 +1921,9 @@ function App() {
               key={item.label}
               type="button"
               className={
-                activeSection === item.id ? 'navigation-item active' : 'navigation-item'
+                activeTopLevel === item.id ? 'navigation-item active' : 'navigation-item'
               }
-              aria-current={activeSection === item.id ? 'page' : undefined}
+              aria-current={activeTopLevel === item.id ? 'page' : undefined}
               aria-label={item.label}
               onClick={() => handleNavigationSelect(item.id)}
             >
