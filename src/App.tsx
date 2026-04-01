@@ -517,6 +517,97 @@ const hiddenPageContent: Record<
   },
 }
 
+const siteLinks: Array<{ id: Exclude<HiddenPage, null>; label: string }> = [
+  { id: 'site-info', label: '사이트 안내' },
+  { id: 'privacy-policy', label: '개인정보' },
+  { id: 'ad-policy', label: '광고 정책' },
+  { id: 'contact', label: '문의 안내' },
+]
+
+const appPageMeta: Record<AppPage, { title: string; description: string }> = {
+  home: {
+    title: 'RUNORY | 러닝 정보 허브',
+    description:
+      '러닝 날씨, 대회 일정, 페이스 계산기, 러닝화 추천, 훈련 계획표를 한곳에서 확인하는 러닝 정보 서비스입니다.',
+  },
+  race: {
+    title: 'RUNORY | 대회 허브',
+    description: '지역과 종목 기준으로 러닝 대회 정보를 탐색하는 RUNORY 대회 허브입니다.',
+  },
+  tools: {
+    title: 'RUNORY | 러닝 도구 허브',
+    description:
+      '페이스 계산기, 훈련 계획표, 날씨 확인 등 러너에게 필요한 실용 도구를 모았습니다.',
+  },
+  gear: {
+    title: 'RUNORY | 장비 허브',
+    description: '러닝화 추천을 포함한 러닝 장비 선택용 정보를 제공하는 RUNORY 장비 허브입니다.',
+  },
+  injury: {
+    title: 'RUNORY | 부상 허브',
+    description: '러닝 중 자주 접하는 부상 유형과 예방, 회복 정보를 정리한 RUNORY 부상 허브입니다.',
+  },
+  'race-schedule': {
+    title: 'RUNORY | 대회 일정',
+    description: '대회명, 종목, 지역, 상태 기준으로 러닝 대회 일정을 탐색할 수 있습니다.',
+  },
+  'pace-calculator': {
+    title: 'RUNORY | 페이스 계산기',
+    description: '거리와 기록을 입력해 1km 기준 평균 페이스를 계산하는 RUNORY 러닝 계산기입니다.',
+  },
+  'training-plan': {
+    title: 'RUNORY | 훈련 계획표',
+    description:
+      '현재 기록과 목표 대회 정보를 바탕으로 주차별 러닝 훈련 계획표를 생성할 수 있습니다.',
+  },
+  weather: {
+    title: 'RUNORY | 러닝 날씨',
+    description: '서울 기준 5일 예보를 바탕으로 러닝 전 확인이 필요한 날씨 정보를 제공합니다.',
+  },
+  'shoe-recommend': {
+    title: 'RUNORY | 러닝화 추천',
+    description: '성별, 발사이즈, 러닝 목적을 바탕으로 러닝화 후보를 정리해 드립니다.',
+  },
+  'injury-types': {
+    title: 'RUNORY | 러닝 부상 종류',
+    description: '러너에게 흔한 부상 유형과 특징을 간단히 정리한 안내 페이지입니다.',
+  },
+  'injury-prevention': {
+    title: 'RUNORY | 러닝 부상 예방',
+    description: '훈련량, 워밍업, 장비, 회복 관점에서 러닝 부상 예방 포인트를 안내합니다.',
+  },
+  'injury-recovery': {
+    title: 'RUNORY | 러닝 회복 가이드',
+    description: '러닝 중 통증 발생 후 회복 단계에서 확인할 기본 원칙을 안내합니다.',
+  },
+  'injury-ai-diagnosis': {
+    title: 'RUNORY | AI진단',
+    description: '러닝 중 통증 상황을 바탕으로 준비 중인 AI 진단 보조 기능 페이지입니다.',
+  },
+}
+
+const hiddenPageMeta: Record<
+  Exclude<HiddenPage, null>,
+  { title: string; description: string }
+> = {
+  'site-info': {
+    title: 'RUNORY | 사이트 안내',
+    description: '서비스 목적, 운영 원칙, 광고 및 정책 관련 기본 정보를 정리한 안내 페이지입니다.',
+  },
+  'privacy-policy': {
+    title: 'RUNORY | 개인정보 및 쿠키 안내',
+    description: '광고 게재와 서비스 운영에 필요한 개인정보 및 쿠키 처리 방침을 안내합니다.',
+  },
+  'ad-policy': {
+    title: 'RUNORY | 광고 및 콘텐츠 운영 원칙',
+    description: '광고와 콘텐츠를 어떤 기준으로 운영하는지 설명하는 RUNORY 광고 정책 페이지입니다.',
+  },
+  contact: {
+    title: 'RUNORY | 문의 및 운영 안내',
+    description: '오류 제보, 정책 문의, 정보 수정 요청 범위를 정리한 RUNORY 문의 안내 페이지입니다.',
+  },
+}
+
 function getHiddenPageFromUrl(): HiddenPage {
   if (typeof window === 'undefined') return null
 
@@ -555,6 +646,19 @@ function getHiddenPageFromUrl(): HiddenPage {
   }
 
   return null
+}
+
+function updateMetaTag(
+  selector: string,
+  attribute: 'content' | 'href',
+  value: string,
+) {
+  if (typeof document === 'undefined') return
+
+  const element = document.head.querySelector(selector)
+  if (!element) return
+
+  element.setAttribute(attribute, value)
 }
 
 function App() {
@@ -877,6 +981,46 @@ function App() {
     return activePage as TopLevelSection
   }, [activePage])
 
+  useEffect(() => {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return
+
+    const meta = hiddenPage ? hiddenPageMeta[hiddenPage] : appPageMeta[activePage]
+    const canonicalPath = hiddenPage ? `/${hiddenPage}` : '/'
+    const canonicalUrl = new URL(canonicalPath, window.location.origin).toString()
+    const pageTitle = meta.title
+
+    document.title = pageTitle
+    updateMetaTag('meta[name="description"]', 'content', meta.description)
+    updateMetaTag('meta[property="og:title"]', 'content', pageTitle)
+    updateMetaTag('meta[property="og:description"]', 'content', meta.description)
+    updateMetaTag('meta[property="og:url"]', 'content', canonicalUrl)
+    updateMetaTag('meta[name="twitter:title"]', 'content', pageTitle)
+    updateMetaTag('meta[name="twitter:description"]', 'content', meta.description)
+    updateMetaTag('link[rel="canonical"]', 'href', canonicalUrl)
+
+    const schemaElement = document.getElementById('runory-structured-data')
+
+    if (!schemaElement) return
+
+    schemaElement.textContent = JSON.stringify(
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'RUNORY',
+        url: window.location.origin,
+        inLanguage: 'ko-KR',
+        description: meta.description,
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${window.location.origin}/#/race-schedule`,
+          'query-input': 'required name=running-query',
+        },
+      },
+      null,
+      2,
+    )
+  }, [activePage, hiddenPage])
+
   const handleNavigationSelect = (section: TopLevelSection) => {
     setActivePage(section)
 
@@ -888,6 +1032,13 @@ function App() {
 
   const handleLeafNavigation = (page: LeafPage) => {
     setActivePage(page)
+  }
+
+  const handleHiddenPageOpen = (page: Exclude<HiddenPage, null>) => {
+    if (typeof window === 'undefined') return
+
+    window.history.replaceState(null, '', `/${page}`)
+    setHiddenPage(page)
   }
 
   return (
@@ -1935,6 +2086,27 @@ function App() {
           ))}
         </nav>
       </div>
+
+      <footer className="site-policy-footer" aria-label="정책 및 운영 링크">
+        <div className="site-policy-footer__inner">
+          <div className="site-policy-footer__copy">
+            <strong>okerry</strong>
+            <p>러닝 정보와 도구를 제공하는 안내형 서비스입니다.</p>
+          </div>
+          <div className="site-policy-footer__links">
+            {siteLinks.map((link) => (
+              <button
+                key={link.id}
+                className="site-policy-link"
+                type="button"
+                onClick={() => handleHiddenPageOpen(link.id)}
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </footer>
     </main>
   )
 }
