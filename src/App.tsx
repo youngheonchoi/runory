@@ -464,19 +464,21 @@ const contactSections = [
   {
     title: '문의 안내',
     body:
-      '서비스 오류, 정보 수정 요청, 광고 관련 문의는 운영자 검토 후 순차적으로 반영합니다. 현재는 별도 회원 지원 시스템 없이 안내 페이지를 통해 운영 정책을 공개합니다.',
+      '문의는 Formspree 폼으로 접수하며, 서비스 오류와 정보 수정 요청을 우선적으로 확인합니다.',
   },
   {
     title: '응답 범위',
     body:
-      '러닝화 정보, 대회 정보, 훈련 계획 관련 오탈자나 잘못된 노출이 확인되면 우선적으로 수정합니다. 의료적 판단이나 개인별 부상 진단은 제공하지 않습니다.',
+      '러닝화 정보, 대회 정보, 훈련 계획 관련 오탈자나 잘못된 노출이 확인되면 우선적으로 수정합니다.',
   },
   {
     title: '운영 메모',
     body:
-      '광고 심사, 정책 반영, 콘텐츠 보강에 따라 페이지 구성이 조정될 수 있습니다. 서비스 신뢰도와 사용자 경험을 해치지 않는 방향을 우선 원칙으로 둡니다.',
+      '광고 심사, 정책 반영, 콘텐츠 보강에 따라 페이지 구성이 조정될 수 있습니다.',
   },
 ]
+
+const contactFormAction = 'https://formspree.io/f/xqegllaj'
 
 const hiddenPageContent: Record<
   Exclude<HiddenPage, null>,
@@ -1057,14 +1059,49 @@ function App() {
             <p className="lead">{hiddenPageContent[hiddenPage].lead}</p>
           </div>
 
-          <section className="site-footer site-footer-embedded" aria-label="사이트 운영 정보">
-            {hiddenPageContent[hiddenPage].sections.map((section) => (
-              <article className="info-card" key={section.title}>
-                <h2>{section.title}</h2>
-                <p>{section.body}</p>
-              </article>
-            ))}
-          </section>
+          {hiddenPage === 'contact' ? (
+            <section className="contact-layout" aria-label="문의 폼">
+              <form className="input-panel contact-form-panel" action={contactFormAction} method="post">
+                <label className="field" htmlFor="email">
+                  <span className="field-label">Your Email</span>
+                  <input name="Email" id="email" type="email" autoComplete="email" required />
+                </label>
+
+                <label className="field" htmlFor="message">
+                  <span className="field-label">Message</span>
+                  <textarea
+                    id="message"
+                    name="Message"
+                    rows={6}
+                    placeholder="문의 내용을 적어주세요."
+                    required
+                  />
+                </label>
+
+                <button className="submit-button" type="submit">
+                  Submit
+                </button>
+              </form>
+
+              <section className="info-stack" aria-label="문의 안내">
+                {hiddenPageContent[hiddenPage].sections.map((section) => (
+                  <article className="info-card" key={section.title}>
+                    <h2>{section.title}</h2>
+                    <p>{section.body}</p>
+                  </article>
+                ))}
+              </section>
+            </section>
+          ) : (
+            <section className="info-stack" aria-label="사이트 운영 정보">
+              {hiddenPageContent[hiddenPage].sections.map((section) => (
+                <article className="info-card" key={section.title}>
+                  <h2>{section.title}</h2>
+                  <p>{section.body}</p>
+                </article>
+              ))}
+            </section>
+          )}
         </section>
       ) : null}
 
