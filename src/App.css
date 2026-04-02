@@ -46,9 +46,18 @@
 }
 
 .home-card {
+  width: min(760px, 100%);
   min-height: min(68svh, 760px);
   display: grid;
-  place-items: center;
+  align-content: start;
+  gap: 24px;
+  padding: 32px;
+  justify-items: stretch;
+}
+
+.home-card .home-mark,
+.home-card .home-feature-grid {
+  width: 100%;
 }
 
 .home-mark {
