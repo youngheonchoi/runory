@@ -1696,18 +1696,15 @@ function App() {
                         <dd>{race.date}</dd>
                       </div>
                       <div>
-                        <dt>지역</dt>
-                        <dd>{race.location}</dd>
+                        <dt>주최</dt>
+                        <dd>{race.organizer?.trim() || '-'}</dd>
                       </div>
-                      {race.venue ? (
-                        <div>
-                          <dt>장소</dt>
-                          <dd>{race.venue}</dd>
-                        </div>
-                      ) : null}
+                      <div>
+                        <dt>장소</dt>
+                        <dd>{race.venue?.trim() || '-'}</dd>
+                      </div>
                     </dl>
 
-                    <p>{race.note}</p>
                   </article>
                 ))}
               </div>
