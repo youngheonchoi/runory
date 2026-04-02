@@ -1203,39 +1203,44 @@ function App() {
             </article>
           </section>
 
-          <section className="site-footer site-footer-embedded" aria-label="이번 주 대회">
+          <section className="site-footer site-footer-embedded" aria-label="이번 주 진행 예정 대회">
             {homeWeekRaces.length > 0 ? (
-              homeWeekRaces.map((race) => (
-                <article className="info-card" key={`${race.name}-${race.date}`}>
-                  <div className="course-badge-list" aria-label="참가 코스">
-                    {splitCourseLabels(race.course, race.category).map((courseLabel) => (
-                      <span className="course-badge" key={`${race.name}-${race.date}-${courseLabel}`}>
-                        {courseLabel}
-                      </span>
-                    ))}
-                  </div>
-                  <h2>{race.name}</h2>
-                  <p>{race.note}</p>
-                  <dl className="home-meta-list">
-                    <div>
-                      <dt>일정</dt>
-                      <dd>{race.date}</dd>
+              <>
+                <div className="home-week-section-head">
+                  <span className="eyebrow">this week</span>
+                  <h2>이번주 진행 예정 대회</h2>
+                </div>
+                {homeWeekRaces.map((race) => (
+                  <article className="info-card" key={`${race.name}-${race.date}`}>
+                    <div className="course-badge-list" aria-label="참가 코스">
+                      {splitCourseLabels(race.course, race.category).map((courseLabel) => (
+                        <span className="course-badge" key={`${race.name}-${race.date}-${courseLabel}`}>
+                          {courseLabel}
+                        </span>
+                      ))}
                     </div>
-                    <div>
-                      <dt>지역</dt>
-                      <dd>{race.location}</dd>
-                    </div>
-                    <div>
-                      <dt>상태</dt>
-                      <dd>{race.status}</dd>
-                    </div>
-                  </dl>
-                </article>
-              ))
+                    <h2>{race.name}</h2>
+                    <dl className="home-meta-list">
+                      <div>
+                        <dt>일정</dt>
+                        <dd>{race.date}</dd>
+                      </div>
+                      <div>
+                        <dt>지역</dt>
+                        <dd>{race.location}</dd>
+                      </div>
+                      <div>
+                        <dt>상태</dt>
+                        <dd>{race.status}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))}
+              </>
             ) : (
               <article className="info-card home-empty-card">
                 <span className="shoe-category">This Week</span>
-                <h2>이번 주 예정 대회</h2>
+                <h2>이번주 진행 예정 대회</h2>
                 <p>이번 주에 표시할 예정 대회가 없습니다.</p>
               </article>
             )}
