@@ -138,7 +138,7 @@ const hubPages: Record<
       {
         id: 'race-schedule',
         title: '대회일정',
-        description: '대회명, 종목, 지역, 상태 기준으로 러닝 대회 일정을 탐색합니다.',
+        description: '대회명과 코스 기준으로 러닝 대회 일정을 탐색합니다.',
         badge: 'Schedule',
       },
     ],
@@ -492,7 +492,7 @@ const appPageMeta: Record<AppPage, { title: string; description: string }> = {
   },
   race: {
     title: 'RUNORY | 대회 허브',
-    description: '지역과 종목 기준으로 러닝 대회 정보를 탐색하는 RUNORY 대회 허브입니다.',
+    description: '코스와 대회명 기준으로 러닝 대회 정보를 탐색하는 RUNORY 대회 허브입니다.',
   },
   tools: {
     title: 'RUNORY | 러닝 도구 허브',
@@ -509,7 +509,7 @@ const appPageMeta: Record<AppPage, { title: string; description: string }> = {
   },
   'race-schedule': {
     title: 'RUNORY | 대회 일정',
-    description: '대회명, 종목, 지역, 상태 기준으로 러닝 대회 일정을 탐색할 수 있습니다.',
+    description: '대회명과 코스 기준으로 러닝 대회 일정을 탐색할 수 있습니다.',
   },
   'pace-calculator': {
     title: 'RUNORY | 페이스 계산기',
@@ -621,9 +621,12 @@ function updateMetaTag(
   element.setAttribute(attribute, value)
 }
 
-function splitCourseLabels(course: string | null | undefined, fallback: string): string[] {
+function splitCourseLabels(
+  course: string | null | undefined,
+  fallback?: string,
+): string[] {
   if (!course || course.trim() === '') {
-    return [fallback]
+    return fallback ? [fallback] : []
   }
 
   const labels: string[] = []
@@ -668,7 +671,7 @@ function splitCourseLabels(course: string | null | undefined, fallback: string):
     labels.push(lastToken)
   }
 
-  return labels.length > 0 ? labels : [fallback]
+  return labels.length > 0 ? labels : fallback ? [fallback] : []
 }
 
 function App() {
@@ -678,9 +681,7 @@ function App() {
   const [raceLoading, setRaceLoading] = useState(false)
   const [raceError, setRaceError] = useState('')
   const [raceNameQuery, setRaceNameQuery] = useState('')
-  const [raceCategoryFilter, setRaceCategoryFilter] = useState('')
-  const [raceLocationFilter, setRaceLocationFilter] = useState('')
-  const [raceStatusFilter, setRaceStatusFilter] = useState('')
+  const [raceCourseFilter, setRaceCourseFilter] = useState('')
   const [distance, setDistance] = useState('')
   const [hours, setHours] = useState('')
   const [minutes, setMinutes] = useState('')
@@ -752,21 +753,9 @@ function App() {
     longestDistance !== '' &&
     averageTrainingPace !== ''
 
-  const raceCategories = useMemo(() => {
-    return Array.from(new Set(raceItems.map((race) => race.category))).sort((left, right) =>
-      left.localeCompare(right, 'ko'),
-    )
-  }, [raceItems])
-
-  const raceLocations = useMemo(() => {
-    return Array.from(new Set(raceItems.map((race) => race.location))).sort((left, right) =>
-      left.localeCompare(right, 'ko'),
-    )
-  }, [raceItems])
-
-  const raceStatuses = useMemo(() => {
-    return Array.from(new Set(raceItems.map((race) => race.status))).sort((left, right) =>
-      left.localeCompare(right, 'ko'),
+  const raceCourseOptions = useMemo(() => {
+    return Array.from(new Set(raceItems.flatMap((race) => splitCourseLabels(race.course)))).sort(
+      (left, right) => left.localeCompare(right, 'ko'),
     )
   }, [raceItems])
 
@@ -775,15 +764,12 @@ function App() {
       const matchName =
         raceNameQuery.trim() === '' ||
         race.name.toLowerCase().includes(raceNameQuery.trim().toLowerCase())
-      const matchCategory =
-        raceCategoryFilter === '' || race.category === raceCategoryFilter
-      const matchLocation =
-        raceLocationFilter === '' || race.location === raceLocationFilter
-      const matchStatus = raceStatusFilter === '' || race.status === raceStatusFilter
+      const matchCourse =
+        raceCourseFilter === '' || splitCourseLabels(race.course).includes(raceCourseFilter)
 
-      return matchName && matchCategory && matchLocation && matchStatus
+      return matchName && matchCourse
     })
-  }, [raceCategoryFilter, raceItems, raceLocationFilter, raceNameQuery, raceStatusFilter])
+  }, [raceCourseFilter, raceItems, raceNameQuery])
 
   const homeQuote = useMemo(() => {
     return homeQuotes[Math.floor(Math.random() * homeQuotes.length)]
@@ -814,9 +800,7 @@ function App() {
 
   const handleResetRaceFilters = () => {
     setRaceNameQuery('')
-    setRaceCategoryFilter('')
-    setRaceLocationFilter('')
-    setRaceStatusFilter('')
+    setRaceCourseFilter('')
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -1577,7 +1561,7 @@ function App() {
             <span className="eyebrow">race</span>
             <h1>대회 찾기</h1>
             <p className="lead">
-              대회명, 종목, 지역, 상태를 기준으로 러닝 대회를 탐색하고 일정과 기본 정보를 비교할 수 있습니다.
+              대회명과 코스를 기준으로 러닝 대회를 탐색하고 일정과 기본 정보를 비교할 수 있습니다.
             </p>
           </div>
 
@@ -1608,45 +1592,15 @@ function App() {
               </label>
 
               <label className="field">
-                <span className="field-label">종목</span>
+                <span className="field-label">코스</span>
                 <select
-                  value={raceCategoryFilter}
-                  onChange={(event) => setRaceCategoryFilter(event.target.value)}
+                  value={raceCourseFilter}
+                  onChange={(event) => setRaceCourseFilter(event.target.value)}
                 >
                   <option value="">전체</option>
-                  {raceCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="field">
-                <span className="field-label">지역</span>
-                <select
-                  value={raceLocationFilter}
-                  onChange={(event) => setRaceLocationFilter(event.target.value)}
-                >
-                  <option value="">전체</option>
-                  {raceLocations.map((location) => (
-                    <option key={location} value={location}>
-                      {location}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="field">
-                <span className="field-label">상태</span>
-                <select
-                  value={raceStatusFilter}
-                  onChange={(event) => setRaceStatusFilter(event.target.value)}
-                >
-                  <option value="">전체</option>
-                  {raceStatuses.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
+                  {raceCourseOptions.map((course) => (
+                    <option key={course} value={course}>
+                      {course}
                     </option>
                   ))}
                 </select>
