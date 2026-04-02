@@ -46,9 +46,18 @@
 }
 
 .home-card {
+  width: min(760px, 100%);
   min-height: min(68svh, 760px);
   display: grid;
-  place-items: center;
+  align-content: start;
+  gap: 24px;
+  padding: 32px;
+  justify-items: stretch;
+}
+
+.home-card .home-mark,
+.home-card .home-feature-grid {
+  width: 100%;
 }
 
 .home-mark {
@@ -327,10 +336,6 @@
   color: var(--text-h);
 }
 
-.home-empty-card {
-  grid-column: 1 / -1;
-  width: 100%;
-}
 
 .eyebrow {
   display: inline-flex;
@@ -728,6 +733,52 @@ textarea:focus {
   color: var(--text-h);
 }
 
+.race-card-title-block {
+  min-width: 0;
+}
+
+.race-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.race-title-row h3 {
+  margin: 6px 0 0;
+  min-width: 0;
+}
+
+.race-homepage-link {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.race-homepage-link:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+  color: var(--text-h);
+}
+
+.race-homepage-link svg {
+  width: 14px;
+  height: 14px;
+}
+
 .race-meta-list {
   margin: 0;
   display: grid;
@@ -951,9 +1002,32 @@ textarea:focus {
 .shoe-category {
   font-size: 12px;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
+  text-transform: none;
   font-weight: 700;
   color: var(--primary);
+}
+
+.course-badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.course-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface));
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .shoe-meta {
@@ -1464,6 +1538,25 @@ textarea:focus {
 
   .race-card {
     gap: 12px;
+  }
+
+  .course-badge-list {
+    gap: 6px;
+  }
+
+  .course-badge {
+    min-height: 26px;
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+
+  .race-title-row {
+    align-items: flex-start;
+  }
+
+  .race-homepage-link {
+    width: 26px;
+    height: 26px;
   }
 
   .race-card-head h3,
