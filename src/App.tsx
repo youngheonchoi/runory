@@ -775,29 +775,6 @@ function App() {
     return homeQuotes[Math.floor(Math.random() * homeQuotes.length)]
   }, [])
 
-  const homeWeekRaces = useMemo(() => {
-    const today = new Date()
-    const dayOfWeek = today.getDay()
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-    const startOfWeek = new Date(today)
-    startOfWeek.setHours(0, 0, 0, 0)
-    startOfWeek.setDate(today.getDate() + mondayOffset)
-
-    const endOfWeek = new Date(startOfWeek)
-    endOfWeek.setDate(startOfWeek.getDate() + 6)
-    endOfWeek.setHours(23, 59, 59, 999)
-
-    return raceItems
-      .filter((race) => {
-        if (race.status === '대회종료') return false
-
-        const raceDate = new Date(`${race.date}T00:00:00+09:00`)
-        return raceDate >= startOfWeek && raceDate <= endOfWeek
-      })
-      .sort((left, right) => left.date.localeCompare(right.date))
-      .slice(0, 4)
-  }, [raceItems])
-
   const handleResetRaceFilters = () => {
     setRaceNameQuery('')
     setRaceCourseFilter('')
@@ -1199,67 +1176,6 @@ function App() {
                 <p>{weatherError}</p>
               ) : (
                 <p>오늘 날씨 정보를 준비 중입니다.</p>
-              )}
-            </article>
-          </section>
-
-          <section className="home-feature-grid" aria-label="이번주 진행 예정 대회">
-            <article className="info-card home-info-card home-week-card" aria-label="이번주 진행 예정 대회">
-              <span className="shoe-category">This Week</span>
-              <h2>이번주 진행 예정 대회</h2>
-              {homeWeekRaces.length > 0 ? (
-                <div className="home-week-list">
-                  {homeWeekRaces.map((race) => (
-                    <article className="home-week-item" key={`${race.name}-${race.date}`}>
-                      <div className="course-badge-list" aria-label="참가 코스">
-                        {splitCourseLabels(race.course, race.category).map((courseLabel) => (
-                          <span
-                            className="course-badge"
-                            key={`${race.name}-${race.date}-${courseLabel}`}
-                          >
-                            {courseLabel}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="race-title-row home-week-title-row">
-                        <h3>{race.name}</h3>
-                        {race.homepage?.trim() ? (
-                          <a
-                            className="race-homepage-link"
-                            href={race.homepage}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label={`${race.name} 홈페이지 이동`}
-                            title="홈페이지 이동"
-                          >
-                            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                              <path
-                                d="M6 3h7v7M13 3 3 13M10 13H3V6"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </a>
-                        ) : null}
-                      </div>
-                      <dl className="home-mini-meta">
-                        <div>
-                          <dt>일정</dt>
-                          <dd>{race.date}</dd>
-                        </div>
-                        <div>
-                          <dt>상태</dt>
-                          <dd>{race.status}</dd>
-                        </div>
-                      </dl>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <p>이번 주에 표시할 예정 대회가 없습니다.</p>
               )}
             </article>
           </section>
