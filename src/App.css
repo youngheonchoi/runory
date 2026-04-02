@@ -951,7 +951,7 @@ textarea:focus {
 .shoe-category {
   font-size: 12px;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
+  text-transform: none;
   font-weight: 700;
   color: var(--primary);
 }
