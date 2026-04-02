@@ -621,6 +621,56 @@ function updateMetaTag(
   element.setAttribute(attribute, value)
 }
 
+function splitCourseLabels(course: string | null | undefined, fallback: string): string[] {
+  if (!course || course.trim() === '') {
+    return [fallback]
+  }
+
+  const labels: string[] = []
+  let current = ''
+  let depth = 0
+
+  for (let index = 0; index < course.length; index += 1) {
+    const char = course[index]
+
+    if (char === '(') {
+      depth += 1
+      current += char
+      continue
+    }
+
+    if (char === ')') {
+      depth = Math.max(0, depth - 1)
+      current += char
+      continue
+    }
+
+    if (char === ',') {
+      const previous = course[index - 1] ?? ''
+      const next = course[index + 1] ?? ''
+      const isNumericComma = /\d/.test(previous) && /\d/.test(next)
+
+      if (depth === 0 && !isNumericComma) {
+        const token = current.trim()
+        if (token) {
+          labels.push(token)
+        }
+        current = ''
+        continue
+      }
+    }
+
+    current += char
+  }
+
+  const lastToken = current.trim()
+  if (lastToken) {
+    labels.push(lastToken)
+  }
+
+  return labels.length > 0 ? labels : [fallback]
+}
+
 function App() {
   const [activePage, setActivePage] = useState<AppPage>('home')
   const [hiddenPage, setHiddenPage] = useState<HiddenPage>(() => getHiddenPageFromUrl())
@@ -1173,7 +1223,13 @@ function App() {
             {homeWeekRaces.length > 0 ? (
               homeWeekRaces.map((race) => (
                 <article className="info-card" key={`${race.name}-${race.date}`}>
-                  <span className="shoe-category">{race.course ?? race.category}</span>
+                  <div className="course-badge-list" aria-label="참가 코스">
+                    {splitCourseLabels(race.course, race.category).map((courseLabel) => (
+                      <span className="course-badge" key={`${race.name}-${race.date}-${courseLabel}`}>
+                        {courseLabel}
+                      </span>
+                    ))}
+                  </div>
                   <h2>{race.name}</h2>
                   <p>{race.note}</p>
                   <dl className="home-meta-list">
@@ -1609,7 +1665,16 @@ function App() {
                   <article className="race-card" key={`${race.name}-${race.date}`}>
                     <div className="race-card-head">
                       <div>
-                        <span className="shoe-category">{race.course ?? race.category}</span>
+                        <div className="course-badge-list" aria-label="참가 코스">
+                          {splitCourseLabels(race.course, race.category).map((courseLabel) => (
+                            <span
+                              className="course-badge"
+                              key={`${race.name}-${race.date}-${courseLabel}`}
+                            >
+                              {courseLabel}
+                            </span>
+                          ))}
+                        </div>
                         <h3>{race.name}</h3>
                       </div>
                       <span

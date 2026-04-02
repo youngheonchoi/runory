@@ -956,6 +956,29 @@ textarea:focus {
   color: var(--primary);
 }
 
+.course-badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.course-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface));
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .shoe-meta {
   list-style: none;
   padding: 0;
@@ -1464,6 +1487,16 @@ textarea:focus {
 
   .race-card {
     gap: 12px;
+  }
+
+  .course-badge-list {
+    gap: 6px;
+  }
+
+  .course-badge {
+    min-height: 26px;
+    padding: 5px 9px;
+    font-size: 11px;
   }
 
   .race-card-head h3,
