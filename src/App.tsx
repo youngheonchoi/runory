@@ -57,6 +57,14 @@ type RaceItem = {
   category: string
   status: string
   note: string
+  venue?: string | null
+  course?: string | null
+  organizer?: string | null
+  phone?: string | null
+  homepage?: string | null
+  email?: string | null
+  sourceId?: string | null
+  sourceUrl?: string | null
 }
 
 type WeatherForecastItem = {
@@ -334,37 +342,6 @@ const injuryPageContent: Record<
   },
 }
 
-const raceCities = [
-  '서울',
-  '부산',
-  '대구',
-  '인천',
-  '광주',
-  '대전',
-  '울산',
-  '세종',
-  '수원',
-  '춘천',
-]
-
-const raceThemes = [
-  '나이트런',
-  '오션런',
-  '시티런',
-  '리버런',
-  '챌린지런',
-]
-
-const raceFilterCategories = ['10km', '하프', '풀']
-const raceStatuses = ['접수중', '접수마감', '대회종료']
-const raceNotes = [
-  '도심 순환 코스로 첫 대회 참가자도 부담이 적음',
-  '강변 중심 평지 코스로 기록 도전에 적합',
-  '업다운이 섞인 코스로 지구력 훈련용으로 좋음',
-  '야간 운영 구간이 포함되어 분위기가 선명함',
-  '가족 참가 부문과 메인 레이스가 함께 운영됨',
-]
-
 const seoulWeatherCity = {
   id: 'seoul',
   name: '서울',
@@ -386,25 +363,6 @@ const homeQuotes = [
   '느려도 괜찮다. 중요한 건 계속 뛰는 것이다.',
   '러닝은 목적지보다 과정이 더 많은 걸 가르쳐준다.',
 ]
-
-const raceItems: RaceItem[] = Array.from({ length: 50 }, (_, index) => {
-  const city = raceCities[index % raceCities.length]
-  const theme = raceThemes[index % raceThemes.length]
-  const category = raceFilterCategories[index % raceFilterCategories.length]
-  const status = raceStatuses[index % raceStatuses.length]
-  const note = raceNotes[index % raceNotes.length]
-  const month = String((index % 10) + 3).padStart(2, '0')
-  const day = String(((index * 3) % 27) + 1).padStart(2, '0')
-
-  return {
-    name: `${city} ${theme} ${index + 1}`,
-    date: `2026-${month}-${day}`,
-    location: city,
-    category,
-    status,
-    note,
-  }
-})
 
 const siteInfoSections = [
   {
@@ -666,6 +624,9 @@ function updateMetaTag(
 function App() {
   const [activePage, setActivePage] = useState<AppPage>('home')
   const [hiddenPage, setHiddenPage] = useState<HiddenPage>(() => getHiddenPageFromUrl())
+  const [raceItems, setRaceItems] = useState<RaceItem[]>([])
+  const [raceLoading, setRaceLoading] = useState(false)
+  const [raceError, setRaceError] = useState('')
   const [raceNameQuery, setRaceNameQuery] = useState('')
   const [raceCategoryFilter, setRaceCategoryFilter] = useState('')
   const [raceLocationFilter, setRaceLocationFilter] = useState('')
@@ -741,6 +702,24 @@ function App() {
     longestDistance !== '' &&
     averageTrainingPace !== ''
 
+  const raceCategories = useMemo(() => {
+    return Array.from(new Set(raceItems.map((race) => race.category))).sort((left, right) =>
+      left.localeCompare(right, 'ko'),
+    )
+  }, [raceItems])
+
+  const raceLocations = useMemo(() => {
+    return Array.from(new Set(raceItems.map((race) => race.location))).sort((left, right) =>
+      left.localeCompare(right, 'ko'),
+    )
+  }, [raceItems])
+
+  const raceStatuses = useMemo(() => {
+    return Array.from(new Set(raceItems.map((race) => race.status))).sort((left, right) =>
+      left.localeCompare(right, 'ko'),
+    )
+  }, [raceItems])
+
   const filteredRaces = useMemo(() => {
     return raceItems.filter((race) => {
       const matchName =
@@ -754,7 +733,7 @@ function App() {
 
       return matchName && matchCategory && matchLocation && matchStatus
     })
-  }, [raceCategoryFilter, raceLocationFilter, raceNameQuery, raceStatusFilter])
+  }, [raceCategoryFilter, raceItems, raceLocationFilter, raceNameQuery, raceStatusFilter])
 
   const homeQuote = useMemo(() => {
     return homeQuotes[Math.floor(Math.random() * homeQuotes.length)]
@@ -897,6 +876,46 @@ function App() {
       setTrainingLoading(false)
     }
   }
+
+  useEffect(() => {
+    let cancelled = false
+
+    void (async () => {
+      setRaceLoading(true)
+      setRaceError('')
+
+      try {
+        const response = await fetch('/marathon_schedule.json')
+
+        if (!response.ok) {
+          throw new Error('대회 JSON을 불러오지 못했습니다.')
+        }
+
+        const payload = (await response.json()) as RaceItem[]
+
+        if (!cancelled) {
+          setRaceItems(payload)
+        }
+      } catch (caught) {
+        const message =
+          caught instanceof Error
+            ? caught.message
+            : '대회 데이터를 불러오는 중 알 수 없는 오류가 발생했습니다.'
+
+        if (!cancelled) {
+          setRaceError(message)
+        }
+      } finally {
+        if (!cancelled) {
+          setRaceLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (activePage !== 'weather' && activePage !== 'home') {
@@ -1539,9 +1558,11 @@ function App() {
                   onChange={(event) => setRaceCategoryFilter(event.target.value)}
                 >
                   <option value="">전체</option>
-                  <option value="10km">10km</option>
-                  <option value="하프">하프</option>
-                  <option value="풀">풀</option>
+                  {raceCategories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
                 </select>
               </label>
 
@@ -1552,9 +1573,9 @@ function App() {
                   onChange={(event) => setRaceLocationFilter(event.target.value)}
                 >
                   <option value="">전체</option>
-                  {raceCities.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
+                  {raceLocations.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
                     </option>
                   ))}
                 </select>
@@ -1567,16 +1588,22 @@ function App() {
                   onChange={(event) => setRaceStatusFilter(event.target.value)}
                 >
                   <option value="">전체</option>
-                  <option value="접수중">접수중</option>
-                  <option value="접수마감">접수마감</option>
-                  <option value="대회종료">대회종료</option>
+                  {raceStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
           </section>
 
           <section className="race-list-section" aria-label="대회 리스트">
-            {filteredRaces.length > 0 ? (
+            {raceLoading ? (
+              <p className="results-empty">대회 데이터를 불러오는 중입니다.</p>
+            ) : raceError ? (
+              <p className="results-empty">{raceError}</p>
+            ) : filteredRaces.length > 0 ? (
               <div className="race-list">
                 {filteredRaces.map((race) => (
                   <article className="race-card" key={`${race.name}-${race.date}`}>
@@ -1587,7 +1614,7 @@ function App() {
                       </div>
                       <span
                         className={`status ${
-                          race.status === '접수중'
+                          race.status === '예정'
                             ? 'ready'
                             : race.status === '대회종료'
                               ? 'race-ended'
@@ -1607,6 +1634,12 @@ function App() {
                         <dt>지역</dt>
                         <dd>{race.location}</dd>
                       </div>
+                      {race.venue ? (
+                        <div>
+                          <dt>장소</dt>
+                          <dd>{race.venue}</dd>
+                        </div>
+                      ) : null}
                     </dl>
 
                     <p>{race.note}</p>
