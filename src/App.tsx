@@ -773,7 +773,7 @@ function App() {
 
   const homeQuote = useMemo(() => {
     return homeQuotes[Math.floor(Math.random() * homeQuotes.length)]
-  }, [])
+  }, [raceItems])
 
   const homeWeekRaces = useMemo(() => {
     const today = new Date()
