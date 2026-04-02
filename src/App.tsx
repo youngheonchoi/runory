@@ -1203,47 +1203,65 @@ function App() {
             </article>
           </section>
 
-          <section className="site-footer site-footer-embedded" aria-label="이번 주 진행 예정 대회">
-            {homeWeekRaces.length > 0 ? (
-              <>
-                <div className="home-week-section-head">
-                  <span className="eyebrow">this week</span>
-                  <h2>이번주 진행 예정 대회</h2>
+          <section className="home-feature-grid" aria-label="이번주 진행 예정 대회">
+            <article className="info-card home-info-card home-week-card" aria-label="이번주 진행 예정 대회">
+              <span className="shoe-category">This Week</span>
+              <h2>이번주 진행 예정 대회</h2>
+              {homeWeekRaces.length > 0 ? (
+                <div className="home-week-list">
+                  {homeWeekRaces.map((race) => (
+                    <article className="home-week-item" key={`${race.name}-${race.date}`}>
+                      <div className="course-badge-list" aria-label="참가 코스">
+                        {splitCourseLabels(race.course, race.category).map((courseLabel) => (
+                          <span
+                            className="course-badge"
+                            key={`${race.name}-${race.date}-${courseLabel}`}
+                          >
+                            {courseLabel}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="race-title-row home-week-title-row">
+                        <h3>{race.name}</h3>
+                        {race.homepage?.trim() ? (
+                          <a
+                            className="race-homepage-link"
+                            href={race.homepage}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`${race.name} 홈페이지 이동`}
+                            title="홈페이지 이동"
+                          >
+                            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                              <path
+                                d="M6 3h7v7M13 3 3 13M10 13H3V6"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </a>
+                        ) : null}
+                      </div>
+                      <dl className="home-mini-meta">
+                        <div>
+                          <dt>일정</dt>
+                          <dd>{race.date}</dd>
+                        </div>
+                        <div>
+                          <dt>상태</dt>
+                          <dd>{race.status}</dd>
+                        </div>
+                      </dl>
+                    </article>
+                  ))}
                 </div>
-                {homeWeekRaces.map((race) => (
-                  <article className="info-card" key={`${race.name}-${race.date}`}>
-                    <div className="course-badge-list" aria-label="참가 코스">
-                      {splitCourseLabels(race.course, race.category).map((courseLabel) => (
-                        <span className="course-badge" key={`${race.name}-${race.date}-${courseLabel}`}>
-                          {courseLabel}
-                        </span>
-                      ))}
-                    </div>
-                    <h2>{race.name}</h2>
-                    <dl className="home-meta-list">
-                      <div>
-                        <dt>일정</dt>
-                        <dd>{race.date}</dd>
-                      </div>
-                      <div>
-                        <dt>지역</dt>
-                        <dd>{race.location}</dd>
-                      </div>
-                      <div>
-                        <dt>상태</dt>
-                        <dd>{race.status}</dd>
-                      </div>
-                    </dl>
-                  </article>
-                ))}
-              </>
-            ) : (
-              <article className="info-card home-empty-card">
-                <span className="shoe-category">This Week</span>
-                <h2>이번주 진행 예정 대회</h2>
+              ) : (
                 <p>이번 주에 표시할 예정 대회가 없습니다.</p>
-              </article>
-            )}
+              )}
+            </article>
           </section>
         </section>
       ) : null}
