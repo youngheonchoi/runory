@@ -728,6 +728,52 @@ textarea:focus {
   color: var(--text-h);
 }
 
+.race-card-title-block {
+  min-width: 0;
+}
+
+.race-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.race-title-row h3 {
+  margin: 6px 0 0;
+  min-width: 0;
+}
+
+.race-homepage-link {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.race-homepage-link:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+  color: var(--text-h);
+}
+
+.race-homepage-link svg {
+  width: 14px;
+  height: 14px;
+}
+
 .race-meta-list {
   margin: 0;
   display: grid;
@@ -1497,6 +1543,15 @@ textarea:focus {
     min-height: 26px;
     padding: 5px 9px;
     font-size: 11px;
+  }
+
+  .race-title-row {
+    align-items: flex-start;
+  }
+
+  .race-homepage-link {
+    width: 26px;
+    height: 26px;
   }
 
   .race-card-head h3,

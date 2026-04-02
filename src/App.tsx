@@ -1664,7 +1664,7 @@ function App() {
                 {filteredRaces.map((race) => (
                   <article className="race-card" key={`${race.name}-${race.date}`}>
                     <div className="race-card-head">
-                      <div>
+                      <div className="race-card-title-block">
                         <div className="course-badge-list" aria-label="참가 코스">
                           {splitCourseLabels(race.course, race.category).map((courseLabel) => (
                             <span
@@ -1675,7 +1675,30 @@ function App() {
                             </span>
                           ))}
                         </div>
-                        <h3>{race.name}</h3>
+                        <div className="race-title-row">
+                          <h3>{race.name}</h3>
+                          {race.homepage?.trim() ? (
+                            <a
+                              className="race-homepage-link"
+                              href={race.homepage}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={`${race.name} 홈페이지 이동`}
+                              title="홈페이지 이동"
+                            >
+                              <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                <path
+                                  d="M6 3h7v7M13 3 3 13M10 13H3V6"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </a>
+                          ) : null}
+                        </div>
                       </div>
                       <span
                         className={`status ${
