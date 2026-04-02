@@ -1173,7 +1173,7 @@ function App() {
             {homeWeekRaces.length > 0 ? (
               homeWeekRaces.map((race) => (
                 <article className="info-card" key={`${race.name}-${race.date}`}>
-                  <span className="shoe-category">{race.category}</span>
+                  <span className="shoe-category">{race.course ?? race.category}</span>
                   <h2>{race.name}</h2>
                   <p>{race.note}</p>
                   <dl className="home-meta-list">
@@ -1609,7 +1609,7 @@ function App() {
                   <article className="race-card" key={`${race.name}-${race.date}`}>
                     <div className="race-card-head">
                       <div>
-                        <span className="shoe-category">{race.category}</span>
+                        <span className="shoe-category">{race.course ?? race.category}</span>
                         <h3>{race.name}</h3>
                       </div>
                       <span
