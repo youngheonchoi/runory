@@ -773,7 +773,7 @@ function App() {
 
   const homeQuote = useMemo(() => {
     return homeQuotes[Math.floor(Math.random() * homeQuotes.length)]
-  }, [raceItems])
+  }, [])
 
   const homeWeekRaces = useMemo(() => {
     const today = new Date()
@@ -791,12 +791,12 @@ function App() {
       .filter((race) => {
         if (race.status === '대회종료') return false
 
-        const raceDate = new Date(`${race.date}T00:00:00`)
+        const raceDate = new Date(`${race.date}T00:00:00+09:00`)
         return raceDate >= startOfWeek && raceDate <= endOfWeek
       })
       .sort((left, right) => left.date.localeCompare(right.date))
       .slice(0, 4)
-  }, [])
+  }, [raceItems])
 
   const handleResetRaceFilters = () => {
     setRaceNameQuery('')
