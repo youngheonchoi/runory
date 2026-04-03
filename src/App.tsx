@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import menuConfigData from './menu-config.json'
 import './App.css'
 
 type Gender = 'male' | 'female' | 'other'
@@ -102,168 +103,69 @@ type WeatherResponse = {
   forecast: WeatherForecastItem[]
 }
 
-type HubCard = {
+type MenuHubCard = {
   id: LeafPage
+  link: LeafPage
   title: string
   description: string
   badge: string
 }
 
-const navigationItems: Array<{
+type MenuHubPage = {
+  eyebrow: string
+  title: string
+  lead: string
+  cards: MenuHubCard[]
+}
+
+type MenuSectionConfig = {
   id: TopLevelSection
+  link: TopLevelSection
   label: string
   shortLabel: string
-}> = [
-  { id: 'home', label: '메인', shortLabel: 'Main' },
-  { id: 'race', label: '대회', shortLabel: 'Race' },
-  { id: 'tools', label: '도구', shortLabel: 'Tools' },
-  { id: 'gear', label: '장비', shortLabel: 'Gear' },
-  { id: 'injury', label: '부상', shortLabel: 'Care' },
-]
-
-const hubPages: Record<
-  Exclude<TopLevelSection, 'home'>,
-  {
-    eyebrow: string
-    title: string
-    lead: string
-    cards: HubCard[]
-  }
-> = {
-  race: {
-    eyebrow: 'race hub',
-    title: '대회 허브',
-    lead: '참가 가능한 러닝 대회 일정을 모아보고, 조건별로 빠르게 비교할 수 있습니다.',
-    cards: [
-      {
-        id: 'race-schedule',
-        title: '대회일정',
-        description: '대회명과 코스 기준으로 러닝 대회 일정을 탐색합니다.',
-        badge: 'Schedule',
-      },
-    ],
-  },
-  tools: {
-    eyebrow: 'running tools',
-    title: '러닝도구 허브',
-    lead: '페이스 확인부터 목표 대회 준비까지, 실전에 필요한 도구를 한 화면에서 고를 수 있습니다.',
-    cards: [
-      {
-        id: 'pace-calculator',
-        title: '페이스 계산기',
-        description: '거리와 기록을 넣으면 1km 기준 평균 페이스를 바로 계산합니다.',
-        badge: 'Calculator',
-      },
-      {
-        id: 'training-plan',
-        title: '훈련 계획표 추출',
-        description: '기록과 목표 대회 정보를 바탕으로 주차별 훈련 계획표를 생성합니다.',
-        badge: 'Planner',
-      },
-      {
-        id: 'weather',
-        title: '날씨',
-        description: '러닝 전 확인이 필요한 날씨 정보를 연결할 수 있는 메뉴입니다.',
-        badge: 'Weather',
-      },
-    ],
-  },
-  gear: {
-    eyebrow: 'gear hub',
-    title: '장비 허브',
-    lead: '러닝 장비 선택이 필요한 순간에 맞춰 핵심 추천 도구로 바로 이동할 수 있습니다.',
-    cards: [
-      {
-        id: 'shoe-recommend',
-        title: '러닝화 추천',
-        description: '성별, 발사이즈, 러닝 목적을 바탕으로 러닝화 후보를 정리합니다.',
-        badge: 'Shoes',
-      },
-    ],
-  },
-  injury: {
-    eyebrow: 'injury hub',
-    title: '부상 허브',
-    lead: '러닝 중 자주 접하는 부상 정보와 예방, 회복 팁을 빠르게 확인할 수 있습니다.',
-    cards: [
-      {
-        id: 'injury-types',
-        title: '부상종류',
-        description: '러너에게 흔한 부상 유형과 특징을 간단히 정리합니다.',
-        badge: 'Types',
-      },
-      {
-        id: 'injury-prevention',
-        title: '부상예방',
-        description: '훈련 전후 습관과 장비 선택 관점에서 예방 포인트를 안내합니다.',
-        badge: 'Prevent',
-      },
-      {
-        id: 'injury-recovery',
-        title: '회복',
-        description: '통증 발생 후 회복 단계에서 점검할 기본 원칙을 정리합니다.',
-        badge: 'Recover',
-      },
-      {
-        id: 'injury-ai-diagnosis',
-        title: 'AI진단',
-        description: '러닝 중 통증 상황을 바탕으로 진단 보조 기능을 준비 중입니다.',
-        badge: 'AI',
-      },
-    ],
-  },
+  hub?: MenuHubPage
 }
 
-const leafPageMeta: Record<
-  LeafPage,
-  { parent: Exclude<TopLevelSection, 'home'>; parentLabel: string; label: string }
-> = {
-  'race-schedule': {
-    parent: 'race',
-    parentLabel: '대회',
-    label: '대회일정',
-  },
-  'pace-calculator': {
-    parent: 'tools',
-    parentLabel: '러닝도구',
-    label: '페이스 계산기',
-  },
-  'training-plan': {
-    parent: 'tools',
-    parentLabel: '러닝도구',
-    label: '훈련 계획표 추출',
-  },
-  weather: {
-    parent: 'tools',
-    parentLabel: '러닝도구',
-    label: '날씨',
-  },
-  'shoe-recommend': {
-    parent: 'gear',
-    parentLabel: '장비',
-    label: '러닝화 추천',
-  },
-  'injury-types': {
-    parent: 'injury',
-    parentLabel: '부상',
-    label: '부상종류',
-  },
-  'injury-prevention': {
-    parent: 'injury',
-    parentLabel: '부상',
-    label: '부상예방',
-  },
-  'injury-recovery': {
-    parent: 'injury',
-    parentLabel: '부상',
-    label: '회복',
-  },
-  'injury-ai-diagnosis': {
-    parent: 'injury',
-    parentLabel: '부상',
-    label: 'AI진단',
-  },
+type MenuConfig = {
+  navigation: MenuSectionConfig[]
 }
+
+type LeafPageMetaEntry = {
+  parent: Exclude<TopLevelSection, 'home'>
+  parentLabel: string
+  label: string
+}
+
+const menuConfig = menuConfigData as MenuConfig
+
+const navigationItems = menuConfig.navigation.map(({ id, link, label, shortLabel }) => ({
+  id,
+  link,
+  label,
+  shortLabel,
+}))
+
+const hubSections = menuConfig.navigation.filter(
+  (section): section is MenuSectionConfig & { id: Exclude<TopLevelSection, 'home'>; hub: MenuHubPage } =>
+    section.id !== 'home' && section.hub !== undefined,
+)
+
+const hubPages = Object.fromEntries(
+  hubSections.map((section) => [section.link, section.hub]),
+) as Record<Exclude<TopLevelSection, 'home'>, MenuHubPage>
+
+const leafPageMeta = Object.fromEntries(
+  hubSections.flatMap((section) =>
+    section.hub.cards.map((card) => [
+      card.link,
+      {
+        parent: section.link,
+        parentLabel: section.label,
+        label: card.title,
+      },
+    ]),
+  ),
+) as Record<LeafPage, LeafPageMetaEntry>
 
 const injuryPageContent: Record<
   Extract<LeafPage, 'injury-types' | 'injury-prevention' | 'injury-recovery'>,
@@ -1190,16 +1092,19 @@ function App() {
             <p className="lead">{hubPages[activePage as Exclude<TopLevelSection, 'home'>].lead}</p>
           </div>
 
-          <section className="hub-grid" aria-label={`${navigationItems.find((item) => item.id === activePage)?.label} 하위 메뉴`}>
+          <section
+            className="hub-grid"
+            aria-label={`${navigationItems.find((item) => item.link === activePage)?.label} 하위 메뉴`}
+          >
             {hubPages[activePage as Exclude<TopLevelSection, 'home'>].cards.map((card) => (
-              <article className="hub-card" key={card.id}>
+              <article className="hub-card" key={card.link}>
                 <span className="shoe-category">{card.badge}</span>
                 <h2>{card.title}</h2>
                 <p>{card.description}</p>
                 <button
                   className="hub-card-button"
                   type="button"
-                  onClick={() => handleLeafNavigation(card.id)}
+                  onClick={() => handleLeafNavigation(card.link)}
                 >
                   이동하기
                 </button>
@@ -2107,7 +2012,7 @@ function App() {
         <section className="hero-card placeholder-card">
           <div className="placeholder-copy">
             <span className="eyebrow">RUNORY</span>
-            <h1>{navigationItems.find((item) => item.id === activePage)?.label}</h1>
+            <h1>{navigationItems.find((item) => item.link === activePage)?.label}</h1>
             <p>이 화면은 다음 단계에서 연결할 예정입니다.</p>
           </div>
         </section>
@@ -2117,14 +2022,14 @@ function App() {
         <nav className="navigation" aria-label="네비게이션">
           {navigationItems.map((item) => (
             <button
-              key={item.label}
+              key={item.link}
               type="button"
               className={
-                activeTopLevel === item.id ? 'navigation-item active' : 'navigation-item'
+                activeTopLevel === item.link ? 'navigation-item active' : 'navigation-item'
               }
-              aria-current={activeTopLevel === item.id ? 'page' : undefined}
+              aria-current={activeTopLevel === item.link ? 'page' : undefined}
               aria-label={item.label}
-              onClick={() => handleNavigationSelect(item.id)}
+              onClick={() => handleNavigationSelect(item.link)}
             >
               <span className="navigation-icon" aria-hidden="true">
                 {item.shortLabel}

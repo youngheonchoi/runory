@@ -1,0 +1,125 @@
+{
+  "navigation": [
+    {
+      "id": "home",
+      "link": "home",
+      "label": "메인",
+      "shortLabel": "Main"
+    },
+    {
+      "id": "race",
+      "link": "race",
+      "label": "대회",
+      "shortLabel": "Race",
+      "hub": {
+        "eyebrow": "race hub",
+        "title": "대회 허브",
+        "lead": "참가 가능한 러닝 대회 일정을 모아보고, 조건별로 빠르게 비교할 수 있습니다.",
+        "cards": [
+          {
+            "id": "race-schedule",
+            "link": "race-schedule",
+            "title": "대회일정",
+            "description": "대회명과 코스 기준으로 러닝 대회 일정을 탐색합니다.",
+            "badge": "Schedule"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tools",
+      "link": "tools",
+      "label": "도구",
+      "shortLabel": "Tools",
+      "hub": {
+        "eyebrow": "running tools",
+        "title": "러닝도구 허브",
+        "lead": "페이스 확인부터 목표 대회 준비까지, 실전에 필요한 도구를 한 화면에서 고를 수 있습니다.",
+        "cards": [
+          {
+            "id": "pace-calculator",
+            "link": "pace-calculator",
+            "title": "페이스 계산기",
+            "description": "거리와 기록을 넣으면 1km 기준 평균 페이스를 바로 계산합니다.",
+            "badge": "Calculator"
+          },
+          {
+            "id": "training-plan",
+            "link": "training-plan",
+            "title": "훈련 계획표 추출",
+            "description": "기록과 목표 대회 정보를 바탕으로 주차별 훈련 계획표를 생성합니다.",
+            "badge": "Planner"
+          },
+          {
+            "id": "weather",
+            "link": "weather",
+            "title": "날씨",
+            "description": "러닝 전 확인이 필요한 날씨 정보를 연결할 수 있는 메뉴입니다.",
+            "badge": "Weather"
+          }
+        ]
+      }
+    },
+    {
+      "id": "gear",
+      "link": "gear",
+      "label": "장비",
+      "shortLabel": "Gear",
+      "hub": {
+        "eyebrow": "gear hub",
+        "title": "장비 허브",
+        "lead": "러닝 장비 선택이 필요한 순간에 맞춰 핵심 추천 도구로 바로 이동할 수 있습니다.",
+        "cards": [
+          {
+            "id": "shoe-recommend",
+            "link": "shoe-recommend",
+            "title": "러닝화 추천",
+            "description": "성별, 발사이즈, 러닝 목적을 바탕으로 러닝화 후보를 정리합니다.",
+            "badge": "Shoes"
+          }
+        ]
+      }
+    },
+    {
+      "id": "injury",
+      "link": "injury",
+      "label": "부상",
+      "shortLabel": "Care",
+      "hub": {
+        "eyebrow": "injury hub",
+        "title": "부상 허브",
+        "lead": "러닝 중 자주 접하는 부상 정보와 예방, 회복 팁을 빠르게 확인할 수 있습니다.",
+        "cards": [
+          {
+            "id": "injury-types",
+            "link": "injury-types",
+            "title": "부상종류",
+            "description": "러너에게 흔한 부상 유형과 특징을 간단히 정리합니다.",
+            "badge": "Types"
+          },
+          {
+            "id": "injury-prevention",
+            "link": "injury-prevention",
+            "title": "부상예방",
+            "description": "훈련 전후 습관과 장비 선택 관점에서 예방 포인트를 안내합니다.",
+            "badge": "Prevent"
+          },
+          {
+            "id": "injury-recovery",
+            "link": "injury-recovery",
+            "title": "회복",
+            "description": "통증 발생 후 회복 단계에서 점검할 기본 원칙을 정리합니다.",
+            "badge": "Recover"
+          },
+          {
+            "id": "injury-ai-diagnosis",
+            "link": "injury-ai-diagnosis",
+            "title": "AI진단",
+            "description": "러닝 중 통증 상황을 바탕으로 진단 보조 기능을 준비 중입니다.",
+            "badge": "AI"
+          }
+        ]
+      }
+    }
+  ]
+}
